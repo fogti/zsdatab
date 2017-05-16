@@ -41,18 +41,8 @@ namespace zsdatab {
   const_context::const_context(const buffer_interface &o)
     : intern::context_base<const table>(o.get_const_table()) { }
 
-  auto const_context::operator=(const buffer_interface &o) -> const_context& {
-    intern::context_common::operator=(o);
-    return *this;
-  }
-
   context::context(table &tab)
     : intern::context_base<table>(tab) { }
-
-  auto context::operator=(const buffer_interface &o) -> context& {
-    intern::context_common::operator=(o);
-    return *this;
-  }
 
   void context::push() {
     _table.update_data(_buffer);

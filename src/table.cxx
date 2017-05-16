@@ -134,7 +134,6 @@ namespace zsdatab {
   }
 
   bool table::read() {
-    // hack: we can use public operator>>
     if(!good() || _d->path.empty()) return false;
     ifstream in(_d->path.c_str());
     if(!in) return false;
@@ -148,7 +147,6 @@ namespace zsdatab {
         ofstream out(_d->path.c_str());
         if(!out) return false;
 
-        // hack: we can use public operator<<
         out << *this;
       } catch(...) {
         return false;
