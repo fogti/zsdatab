@@ -62,7 +62,7 @@ namespace zsdatab {
   table::table(const string &name):
     _d(new table::impl())
   {
-    string &path = _d->path;
+    string &path = _d->path = name;
 
     bool &_valid = _d->_valid;
     metadata &_meta = _d->_meta;
