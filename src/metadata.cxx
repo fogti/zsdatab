@@ -108,7 +108,8 @@ namespace zsdatab {
   auto metadata::get_field_nr(const string &colname) const -> size_t {
     const vector<string> &cols = _d->cols;
     const auto it = find(cols.begin(), cols.end(), colname);
-    if(it == cols.end()) throw out_of_range("zsdatab::metadata::get_field_nr");
+    if(it == cols.end())
+      throw out_of_range("zsdatab::metadata::get_field_nr");
     return static_cast<size_t>(distance(cols.begin(), it));
   }
 
@@ -122,8 +123,9 @@ namespace zsdatab {
     return ret;
   }
 
-  auto metadata::serialize(vector<string> line) const -> string {
-    line.resize(_d->cols.size());
+  auto metadata::serialize(const vector<string> &line) const -> string {
+    if(line.size() != _d->cols.size())
+      throw length_error(__PRETTY_FUNCTION__);
     return serialize_line(line, _d->sep);
   }
 

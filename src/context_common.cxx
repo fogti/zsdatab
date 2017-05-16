@@ -37,15 +37,16 @@ using namespace std;
 
 namespace zsdatab {
   namespace intern {
+    void op_table_compat_chk(const table& a, const table& b) {
+      if(&a.get_metadata() != &b.get_metadata())
+        throw invalid_argument("zsdatab::intern::op_table_compat_chk");
+    }
+
     context_common::context_common(const buffer_interface &bif)
       : _buffer(bif.get_data()) { }
 
     context_common& context_common::operator=(const context_common &o) {
-      if(this != &o) {
-        op_table_compat_chk(get_const_table(), o.get_const_table());
-        _buffer = o._buffer;
-      }
-      return *this;
+      return *this = static_cast<const buffer_interface&>(o);
     }
 
     context_common& context_common::operator=(const buffer_interface &o) {
@@ -63,15 +64,7 @@ namespace zsdatab {
     }
 
     context_common& context_common::operator+=(const context_common &o) {
-      if(this != &o) {
-        op_table_compat_chk(get_const_table(), o.get_const_table());
-        _buffer.reserve(_buffer.size() + o._buffer.size());
-        _buffer.insert(_buffer.end(), o._buffer.begin(), o._buffer.end());
-      } else {
-        _buffer.reserve(_buffer.size() << 1);
-        copy_n(_buffer.begin(), _buffer.size(), back_inserter(_buffer)); // assuming no overflow
-      }
-      return *this;
+      return *this += static_cast<const buffer_interface&>(o);
     }
 
     context_common& context_common::operator+=(const buffer_interface &o) {
@@ -86,18 +79,18 @@ namespace zsdatab {
       return *this;
     }
 
-    context_common& context_common::operator+=(const vector<string> &line) {
-      append(line);
+    context_common& context_common::operator+=(vector<string> line) {
+      if(line.size() != get_metadata().get_field_count())
+        throw length_error(__PRETTY_FUNCTION__);
+      _buffer.push_back(line);
       return *this;
     }
 
-    void context_common::pull() {
+    context_common& context_common::pull() {
       _buffer = get_const_table().get_data();
+      return *this;
     }
 
-    void context_common::clear() noexcept {
-      _buffer.clear();
-    }
 
     bool context_common::good() const noexcept {
       return true;
@@ -107,12 +100,13 @@ namespace zsdatab {
       return _buffer.empty();
     }
 
-    void context_common::append(vector<string> line) {
-      line.resize(get_metadata().get_field_count());
-      _buffer.push_back(line);
+    // select
+    context_common& context_common::clear() noexcept {
+      _buffer.clear();
+      return *this;
     }
 
-    void context_common::sort() {
+    context_common& context_common::sort() {
       std::sort(_buffer.begin(), _buffer.end(),
         [](const vector<string> &a, const vector<string> &b) -> bool {
           for(size_t i = 0; i < a.size(); ++i) {
@@ -122,18 +116,23 @@ namespace zsdatab {
           return false;
         }
       );
+
+      return *this;
     }
 
-    void context_common::uniq() {
-      if(empty()) return;
-      sort();
-      _buffer.erase(
-        std::unique(_buffer.begin(), _buffer.end()),
-        _buffer.end()
-      );
+    context_common& context_common::uniq() {
+      if(!empty()) {
+        sort();
+        _buffer.erase(
+          std::unique(_buffer.begin(), _buffer.end()),
+          _buffer.end()
+        );
+      }
+
+      return *this;
     }
 
-    void context_common::negate() {
+    context_common& context_common::negate() {
       if(empty())
         pull();
       else if(_buffer == get_const_table().get_data())
@@ -149,17 +148,14 @@ namespace zsdatab {
           }),
           _buffer.end());
       }
+
+      return *this;
     }
 
-    bool context_common::select(const string& field, const string& value, const bool whole) {
-      if(empty()) return false;
+    context_common& context_common::filter(const string& field, const string& value, const bool whole) {
+      if(empty()) return *this;
 
-      size_t fieldn;
-      try {
-        fieldn = get_field_nr(field);
-      } catch(...) {
-        return false;
-      }
+      size_t fieldn = get_field_nr(field);
 
       using namespace std;
       _buffer.erase(
@@ -170,62 +166,42 @@ namespace zsdatab {
         ),
         _buffer.end());
 
-      return !empty();
+      return *this;
     }
 
-    bool context_common::set_field(const string& field, const string& value) {
-      size_t fieldn;
-      try {
-        fieldn = get_field_nr(field);
-      } catch(...) {
-        return false;
-      }
+    context_common& context_common::set_field(const string& field, const string& value) {
+      size_t fieldn = get_field_nr(field);
 
       for(auto &l : _buffer)
         l[fieldn] = value;
 
-      return true;
+      return *this;
     }
 
-    bool context_common::append_part(const string& field, const string& value) {
-      size_t fieldn;
-      try {
-        fieldn = get_field_nr(field);
-      } catch(...) {
-        return false;
-      }
+    context_common& context_common::append_part(const string& field, const string& value) {
+      size_t fieldn = get_field_nr(field);
 
       for(auto &l : _buffer)
         l[fieldn] += value;
 
-      return true;
+      return *this;
     }
 
-    bool context_common::remove_part(const string& field, const string& value) {
-      size_t fieldn;
-      try {
-        fieldn = get_field_nr(field);
-      } catch(...) {
-        return false;
-      }
+    context_common& context_common::remove_part(const string& field, const string& value) {
+      size_t fieldn = get_field_nr(field);
 
       for(auto &l : _buffer) {
         const string::size_type pos = l[fieldn].find(value);
         if(pos != string::npos) l[fieldn].erase(pos, value.length());
       }
 
-      return true;
+      return *this;
     }
 
-    bool context_common::replace_part(const string& field, const string& from, const string& to) {
-      if(from.empty()) return false;
+    context_common& context_common::replace_part(const string& field, const string& from, const string& to) {
+      if(from.empty()) return *this;
 
-      size_t fieldn;
-      try {
-        fieldn = get_field_nr(field);
-      } catch(...) {
-        return false;
-      }
+      size_t fieldn = get_field_nr(field);
 
       for(auto &l : _buffer) {
         size_t start_pos = 0;
@@ -235,11 +211,11 @@ namespace zsdatab {
         }
       }
 
-      return true;
+      return *this;
     }
 
     // report
-    vector<string> context_common::get_field(const string &colname) const {
+    vector<string> context_common::get_column_data(const string &colname, bool _uniq) const {
       vector<string> ret;
       size_t fieldn;
       try {
@@ -250,6 +226,15 @@ namespace zsdatab {
 
       for(auto &&i : _buffer)
         ret.push_back(i[fieldn]);
+
+      if(!ret.empty() && _uniq) {
+        std::sort(ret.begin(), ret.end());
+        ret.erase(
+          std::unique(ret.begin(), ret.end()),
+          ret.end()
+        );
+      }
+
       return ret;
     }
 
@@ -263,11 +248,6 @@ namespace zsdatab {
 
     auto context_common::get_field_nr(const string &colname) const -> size_t {
       return get_metadata().get_field_nr(colname);
-    }
-
-    void context_common::op_table_compat_chk(const table& a, const table& b) const {
-      if(&a.get_metadata() != &b.get_metadata())
-        throw invalid_argument("zsdatab::context_common::op_table_compat_chk");
     }
 
     bool operator==(const context_common &a, const context_common &b) noexcept {

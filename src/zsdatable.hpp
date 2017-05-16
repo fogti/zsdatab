@@ -84,7 +84,7 @@ namespace zsdatab {
     auto get_field_name(const size_t n) const -> std::string;
 
     auto deserialize(const std::string &line) const -> std::vector<std::string>;
-    auto serialize(std::vector<std::string> line) const -> std::string;
+    auto serialize(const std::vector<std::string> &line) const -> std::string;
   };
 
   bool operator==(const metadata &a, const metadata &b);
@@ -143,6 +143,10 @@ namespace zsdatab {
   std::istream& operator>>(std::istream& stream, table& tab);
 
   namespace intern {
+    // an internal checker for compatibility of tables
+    // throws if not compatible
+    void op_table_compat_chk(const table& a, const table& b);
+
     // abstract base class for contexts
     class context_common : public buffer_interface {
      public:
@@ -156,30 +160,28 @@ namespace zsdatab {
       auto operator=(context_common &&o) -> context_common&;
       auto operator+=(const context_common &o) -> context_common&;
       auto operator+=(const buffer_interface &o) -> context_common&;
-      auto operator+=(const std::vector<std::string> &line) -> context_common&;
+      auto operator+=(std::vector<std::string> line) -> context_common&;
 
-      void pull();
+      context_common& pull();
 
-      void clear() noexcept;
       bool good() const noexcept;
       bool empty() const noexcept;
-      void append(std::vector<std::string> line);
 
-      void sort();
-      void uniq();
-      void negate();
-      bool select(const std::string& field, const std::string& value, const bool whole = true);
+      // select
+      context_common& clear() noexcept;
+      context_common& sort();
+      context_common& uniq();
+      context_common& negate();
+      context_common& filter(const std::string& field, const std::string& value, const bool whole = true);
 
       // change
-      bool set_field(const std::string& field, const std::string& value);
-      bool append_part(const std::string& field, const std::string& value);
-      bool remove_part(const std::string& field, const std::string& value);
-      bool replace_part(const std::string& field, const std::string& from, const std::string& to);
+      context_common& set_field(const std::string& field, const std::string& value);
+      context_common& append_part(const std::string& field, const std::string& value);
+      context_common& remove_part(const std::string& field, const std::string& value);
+      context_common& replace_part(const std::string& field, const std::string& from, const std::string& to);
 
       // report
-      auto get_field(const std::string &colname) const -> std::vector<std::string>;
-
-      // const getters
+      auto get_column_data(const std::string &colname, bool _uniq = false) const -> std::vector<std::string>;
       auto get_metadata() const noexcept -> const metadata&;
       auto get_data() const noexcept -> const buffer_t&;
       auto get_field_nr(const std::string &colname) const -> size_t;
@@ -189,8 +191,6 @@ namespace zsdatab {
 
      protected:
       buffer_t _buffer;
-
-      void op_table_compat_chk(const table& a, const table& b) const;
 
      private:
       friend std::ostream& operator<<(std::ostream& stream, const context_common &ctx);
@@ -229,10 +229,9 @@ namespace zsdatab {
       T &_table;
     };
 
-    template<class T, class V>
-    context_base<T, V> operator+(const context_base<T, V> &a, const context_base<T, V> &b) {
-      context_base<T, V> ret = a;
-      return ret += b;
+    template<class T>
+    context_base<T> operator+(const context_base<T> &a, const context_base<T> &b) {
+      return context_base<T>(a) += b;
     }
   }
 
