@@ -31,7 +31,8 @@
 
 #ifndef ZSDATABLE_HPP
 # define ZSDATABLE_HPP 1
-# include <iostream>
+# include <istream>
+# include <ostream>
 # include <vector>
 # include <string>
 
@@ -86,13 +87,19 @@ namespace zsdatab {
     auto serialize(std::vector<std::string> line) const -> std::string;
   };
 
+  bool operator==(const metadata &a, const metadata &b);
+  bool operator!=(const metadata &a, const metadata &b);
+
+  std::ostream& operator<<(std::ostream& stream, const metadata& meta);
+  std::istream& operator>>(std::istream& stream, metadata& meta);
+
   class table;
 
   // buffer_interface class:
   //  common interface for table, context and const_context
   class buffer_interface {
    public:
-    virtual ~buffer_interface() { }
+    virtual ~buffer_interface() noexcept = default;
 
     virtual bool good() const noexcept = 0;
     virtual bool empty() const noexcept = 0;
@@ -116,7 +123,7 @@ namespace zsdatab {
     table(const table &o);
     table(table &&o);
 
-    ~table() noexcept;
+    virtual ~table() noexcept;
 
     void swap(table &o) noexcept;
 
@@ -132,6 +139,9 @@ namespace zsdatab {
     void update_data(const buffer_t &n);
   };
 
+  std::ostream& operator<<(std::ostream& stream, const table& tab);
+  std::istream& operator>>(std::istream& stream, table& tab);
+
   namespace intern {
     // abstract base class for contexts
     class context_common : public buffer_interface {
@@ -139,6 +149,7 @@ namespace zsdatab {
       context_common(const buffer_interface &bif);
       context_common(const context_common &ctx) = default;
       context_common(context_common &&ctx) noexcept = default;
+      virtual ~context_common() noexcept = default;
 
       auto operator=(const context_common &o) -> context_common&;
       auto operator=(const buffer_interface &o) -> context_common&;
@@ -197,13 +208,16 @@ namespace zsdatab {
      public:
       explicit context_base(T &tab): context_common(tab), _table(tab) { }
       context_base(const T &&tab) = delete;
+      virtual ~context_base() noexcept = default;
 
-      auto operator=(const buffer_interface &o) -> context_base& {
+      template<class B>
+      auto operator=(const B &o) -> context_base& {
         context_common::operator=(o);
         return *this;
       }
 
-      auto operator+=(const buffer_interface &o) -> context_base& {
+      template<class B>
+      auto operator+=(const B &o) -> context_base& {
         context_common::operator+=(o);
         return *this;
       }
@@ -233,8 +247,7 @@ namespace zsdatab {
     const_context(const buffer_interface &&o) = delete;
     const_context(const const_context &o) = default;
     const_context(const_context &&o) noexcept = default;
-
-    auto operator=(const buffer_interface &o) -> const_context&;
+    virtual ~const_context() noexcept = default;
   };
 
   class context final : public intern::context_base<table> {
@@ -244,8 +257,7 @@ namespace zsdatab {
     explicit context(table& tab);
     context(const context &o) = default;
     context(context &&o) noexcept = default;
-
-    auto operator=(const buffer_interface &o) -> context&;
+    virtual ~context() noexcept = default;
 
     // transfer
     void push();
@@ -253,14 +265,5 @@ namespace zsdatab {
     // rm = negate push
     // rmexcept = push
   };
-
-  bool operator==(const metadata &a, const metadata &b);
-  bool operator!=(const metadata &a, const metadata &b);
-
-  std::ostream& operator<<(std::ostream& stream, const metadata& meta);
-  std::istream& operator>>(std::istream& stream, metadata& meta);
-
-  std::ostream& operator<<(std::ostream& stream, const table& tab);
-  std::istream& operator>>(std::istream& stream, table& tab);
 }
 #endif

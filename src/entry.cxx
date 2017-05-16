@@ -31,7 +31,6 @@
 
 #include <ctype.h>
 #include <stdlib.h>
-//#include <unistd.h>
 #include <iostream>
 #include <fstream>
 
@@ -166,41 +165,34 @@ int main(int argc, char *argv[]) {
       commands.pop_front();
       commands.pop_front();
 
-      zsdatab::context tmp2_ctx(my_table);
-      tmp2_ctx = my_ctx + tmp_ctx;
-      tmp2_ctx.push();
-
-      //tmp_ctx += my_ctx;
-      //tmp_ctx.push();
+      tmp_ctx += my_ctx;
+      tmp_ctx.push();
     } else if(cmd == "select") {
-      if(!my_ctx.select(commands[0], commands[1])) {
-        // keep the old behavoir
-        if(!my_ctx.empty())
-          fieldname_err(cmd, commands[0]);
-      }
+      // keep the old behavoir
+      if(!my_ctx.select(commands[0], commands[1]) && !my_ctx.empty())
+        fieldname_err(cmd, commands[0]);
+
       commands.pop_front();
       commands.pop_front();
     } else if(cmd == "xsel") {
-      if(!my_ctx.select(commands[1], commands[2], xsel_gmatcht(commands[0]) == 1)) {
-        // keep the old behavoir
-        if(!my_ctx.empty())
-          fieldname_err(cmd, commands[1]);
-      }
+      // keep the old behavoir
+      if(!my_ctx.select(commands[1], commands[2], xsel_gmatcht(commands[0]) == 1) && !my_ctx.empty())
+        fieldname_err(cmd, commands[1]);
       commands.pop_front();
       commands.pop_front();
       commands.pop_front();
     } else if(cmd == "new") {
       vector<string> line;
       line.reserve(colcnt);
+
       for(size_t fieldn = 0; fieldn < colcnt; ++fieldn) {
         line.push_back(commands[0]);
         commands.pop_front();
       }
 
-      zsdatab::context crctx(my_table);
-      crctx.append(line);
-      crctx.push();
       my_ctx.pull();
+      my_ctx += line;
+      my_ctx.push();
     } else if(cmd == "get") {
       for(auto &&l : my_ctx.get_field(commands[0]))
         cout << l << '\n';
