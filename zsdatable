@@ -1,0 +1,121 @@
+#!/bin/bash
+
+##################################################
+#      program: zsdatable
+#      package: zsdatab
+#      version: 0.0.9
+##################################################
+#       author: Erik Kai Alain Zscheile
+#        email: erik.zscheile.ytrizja@gmail.com
+##################################################
+# organisation: Ytrizja
+#     org unit: Zscheile IT
+#     location: Chemnitz, Saxony
+##################################################
+#
+# Copyright (c) 2016 Erik Kai Alain Zscheile
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+# and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+##################################################
+
+if [[ -z $1 || -z $2 ]]; then
+  cat <<EOF
+USAGE: zsdatable TABLE CMD ARGS...
+
+Commands:"
+  mk  SEPERATOR COLUMNS...  make table
+  mmk METAFILE              make table from metafile
+  rm                        delete table
+  chmod MODE                chmod table
+  sort [-u]                 sort table entries
+  mv  DESTINATION           move table to DESTINATION
+
+zsdatab v0.0.9 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>
+released under X11-License
+EOF
+  exit 1
+fi
+
+zerror() {
+  echo "zsdatable: ERROR: $*" 1>&2
+  exit 1
+}
+
+readonly TABLE=$1
+shift
+
+case "$1" in
+  (mk|mmk)
+    [[ -f $TABLE ]] && zerror "$TABLE: file already exists"
+    ;;
+
+  (*)
+    [[ -f $TABLE ]] || zerror "$TABLE: file not found"
+    ;;
+esac
+
+if [[ mk == $1 ]]; then
+  (
+    echo "$2"
+    shift 2
+    echo "$*" | tr ';' _
+  ) > "$TABLE.meta"
+elif [[ mmk == $1 ]]; then
+  [[ -f $2 ]] || zerror "$2: file not found"
+  cp "$2" "$TABLE.meta"
+fi
+
+case "$1" in
+  (mk|mmk)
+    touch "$TABLE"
+    chmod a-w "$TABLE.meta"
+    ;;
+
+  (rm)
+    rm -f "$TABLE" "$TABLE.meta"
+    ;;
+
+  (chmod)
+    "$@" "$TABLE" "$TABLE.meta"
+    ;;
+
+  (sort)
+    TMPFILE="$(mktemp)"
+    (( $? == 0 )) || zerror "cannot create tmpfile"
+    trap "rm -f \"$TMPFILE\"; exit" EXIT
+    "$@" "$TABLE" > "$TMPFILE" && mv -f "$TMPFILE" "$TABLE"
+    ;;
+
+  (mv)
+    if [ -d "$2" ]; then
+      mv -f -t "$2" "$TABLE" "$TABLE.meta"
+    else
+      SUC=1
+      for i in '' .meta; do
+        cp -f "$TABLE$i" "$2$i" || { SUC=0; break; }
+      done
+      if (( $SUC == 0 )); then
+        rm -f "$2" "$2.meta"
+        zerror "cp failed"
+      fi
+      rm -f "$TABLE" "$TABLE.meta"
+    fi
+    ;;
+
+  (*)
+    zerror "unknown command '$1'"
+    ;;
+esac

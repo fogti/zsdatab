@@ -1,0 +1,24 @@
+# - Try to find Zsdatable
+# Once done, this will define
+#
+#  Zsdatable_FOUND - system has Zsdatable
+#  Zsdatable_INCLUDE_DIRS - the Zsdatable include directories
+#  Zsdatable_LIBRARIES - link these to use Zsdatable
+
+include(LibFindMacros)
+
+find_path(Zsdatable_INCLUDE_DIR
+  NAMES zsdatable.hpp
+  PATHS @INSTALL_INCLUDE_DIR@
+)
+
+find_library(Zsdatable_LIBRARY
+  NAMES zsdatable
+  PATHS @INSTALL_LIB_DIR@
+)
+
+# Set the include dir variables and the libraries and let libfind_process do the rest.
+# NOTE: Singular variables for this library, plural for libraries - this lib depends on.
+set(Zsdatable_PROCESS_INCLUDES Zsdatable_INCLUDE_DIR)
+set(Zsdatable_PROCESS_LIBS Zsdatable_LIBRARY)
+libfind_process(Zsdatable)
