@@ -33,10 +33,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fstream>
+#include <iostream>
 
 #include "zsdatable.hpp"
-
-#include <fstream>
 
 using namespace std;
 
@@ -142,13 +142,29 @@ namespace zsdatab {
   }
 
   bool table::write() noexcept {
+    static const string fetpf = "libzsdatable.so: ERROR: zsdatab::table::write() failed ";
+
+    // we must do carefully error handling here because
+    // the destructor can't release the lock on the table if we don't do this
+
     if(good() && _d->_modified && !_d->path.empty()) {
       try {
         ofstream out(_d->path.c_str());
-        if(!out) return false;
-
+        if(!out) {
+          cerr << fetpf << "(table open failed)\n";
+          return false;
+        }
         out << *this;
+      } catch(const length_error &e) {
+        cerr << fetpf << "(corrupt table data)\n"
+                "  failure detected in: " << e.what() << '\n';
+        return false;
+      } catch(const exception &e) {
+        cerr << fetpf << "(unknown error)\n"
+                "  failure detected in: " << e.what() << '\n';
+        return false;
       } catch(...) {
+        cerr << fetpf << "(unknown error - untraceable)\n";
         return false;
       }
       _d->_modified = false;

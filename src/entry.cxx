@@ -106,107 +106,108 @@ int main(int argc, char *argv[]) {
   zsdatab::context my_ctx(my_table);
   deque<string> commands(argv + 2, argv + argc);
 
+  string cmd, field;
+
   // parse commands
-  while(!commands.empty()) {
-    const string cmd = my_tolower(commands.front());
-    commands.pop_front();
-
-    // check args
-    {
-      bool args_ok = true;
-      if(cmd == "ch" || cmd == "select" || cmd == "appart" || cmd == "rmpart") {
-        if(commands.size() < 2 || commands.front().empty()) args_ok = false;
-      } else if(cmd == "xsel") {
-        if(commands.size() < 3 || commands[0].empty() || commands[1].empty()) args_ok = false;
-        else if(!xsel_gmatcht(commands[0])) args_ok = false;
-      } else if(cmd == "new") {
-        if(commands.size() < colcnt) args_ok = false;
-      } else if(cmd == "get") {
-        if(commands.empty() || commands.front().empty()) args_ok = false;
-      } else if(cmd == "rm" || cmd == "rmexcept" || cmd == "neg" || cmd == "quit" || cmd == "push") {
-        // do nothing
-      } else zerror("unknown command '" + cmd + "'");
-
-      if(!args_ok) zerror("command " + cmd + ": invalid args");
-    }
-
-    // command execution
-    if(cmd == "ch") {
-      zsdatab::context tmp_ctx = my_ctx;
-      tmp_ctx.negate();
-
-      if(!my_ctx.set_field(commands[0], commands[1]))
-        fieldname_err(cmd, commands[0]);
-
-      commands.pop_front();
+  try {
+    while(!commands.empty()) {
+      cmd = my_tolower(commands.front());
       commands.pop_front();
 
-      tmp_ctx += my_ctx;
-      tmp_ctx.push();
-    } else if(cmd == "appart") {
-      zsdatab::context tmp_ctx = my_ctx;
-      tmp_ctx.negate();
+      // check args
+      {
+        bool args_ok = true;
+        if(cmd == "ch" || cmd == "select" || cmd == "appart" || cmd == "rmpart") {
+          if(commands.size() < 2 || commands.front().empty()) args_ok = false;
+          else field = commands[0];
+        } else if(cmd == "xsel") {
+          if(commands.size() < 3 || commands[0].empty() || commands[1].empty()) args_ok = false;
+          else if(!xsel_gmatcht(commands[0])) args_ok = false;
+          else field = commands[1];
+        } else if(cmd == "new") {
+          if(commands.size() < colcnt) args_ok = false;
+        } else if(cmd == "get") {
+          if(commands.empty() || commands.front().empty()) args_ok = false;
+          else field = commands[0];
+        } else if(cmd == "rm" || cmd == "rmexcept" || cmd == "neg" || cmd == "quit" || cmd == "push") {
+          // do nothing
+        } else zerror("unknown command '" + cmd + "'");
 
-      if(!my_ctx.append_part(commands[0], commands[1]))
-        fieldname_err(cmd, commands[0]);
-
-      commands.pop_front();
-      commands.pop_front();
-
-      tmp_ctx += my_ctx;
-      tmp_ctx.push();
-    } else if(cmd == "rmpart") {
-      zsdatab::context tmp_ctx = my_ctx;
-      tmp_ctx.negate();
-
-      if(!my_ctx.remove_part(commands[0], commands[1]))
-        fieldname_err(cmd, commands[0]);
-
-      commands.pop_front();
-      commands.pop_front();
-
-      tmp_ctx += my_ctx;
-      tmp_ctx.push();
-    } else if(cmd == "select") {
-      // keep the old behavoir
-      if(!my_ctx.select(commands[0], commands[1]) && !my_ctx.empty())
-        fieldname_err(cmd, commands[0]);
-
-      commands.pop_front();
-      commands.pop_front();
-    } else if(cmd == "xsel") {
-      // keep the old behavoir
-      if(!my_ctx.select(commands[1], commands[2], xsel_gmatcht(commands[0]) == 1) && !my_ctx.empty())
-        fieldname_err(cmd, commands[1]);
-      commands.pop_front();
-      commands.pop_front();
-      commands.pop_front();
-    } else if(cmd == "new") {
-      vector<string> line;
-      line.reserve(colcnt);
-
-      for(size_t fieldn = 0; fieldn < colcnt; ++fieldn) {
-        line.push_back(commands[0]);
-        commands.pop_front();
+        if(!args_ok) zerror("command " + cmd + ": invalid args");
       }
 
-      my_ctx.pull();
-      my_ctx += line;
-      my_ctx.push();
-    } else if(cmd == "get") {
-      for(auto &&l : my_ctx.get_field(commands[0]))
-        cout << l << '\n';
-      return 0;
-    } else if(cmd == "rm") {
-      my_ctx.negate();
-      my_ctx.push();
-    } else if(cmd == "rmexcept") {
-      my_ctx.push();
-    } else if(cmd == "neg") {
-      my_ctx.negate();
-    } else if(cmd == "push") {
-      my_ctx.push();
-    } else if(cmd == "quit") return 0;
+      // command execution
+      if(cmd == "ch") {
+        zsdatab::context tmp_ctx = my_ctx;
+        tmp_ctx.negate();
+
+        my_ctx.set_field(field, commands[1]);
+
+        commands.pop_front();
+        commands.pop_front();
+
+        tmp_ctx += my_ctx;
+        tmp_ctx.push();
+      } else if(cmd == "appart") {
+        zsdatab::context tmp_ctx = my_ctx;
+        tmp_ctx.negate();
+
+        my_ctx.append_part(field, commands[1]);
+
+        commands.pop_front();
+        commands.pop_front();
+
+        tmp_ctx += my_ctx;
+        tmp_ctx.push();
+      } else if(cmd == "rmpart") {
+        zsdatab::context tmp_ctx = my_ctx;
+        tmp_ctx.negate();
+
+        my_ctx.remove_part(field, commands[1]);
+
+        commands.pop_front();
+        commands.pop_front();
+
+        tmp_ctx += my_ctx;
+        tmp_ctx.push();
+      } else if(cmd == "select") {
+        my_ctx.filter(field, commands[1]);
+        commands.pop_front();
+        commands.pop_front();
+      } else if(cmd == "xsel") {
+        my_ctx.filter(field, commands[2], xsel_gmatcht(commands[0]) == 1);
+        commands.pop_front();
+        commands.pop_front();
+        commands.pop_front();
+      } else if(cmd == "new") {
+        vector<string> line;
+        line.reserve(colcnt);
+
+        for(size_t fieldn = 0; fieldn < colcnt; ++fieldn) {
+          line.push_back(commands[0]);
+          commands.pop_front();
+        }
+
+        my_ctx.pull();
+        my_ctx += line;
+        my_ctx.push();
+      } else if(cmd == "get") {
+        for(auto &&l : my_ctx.get_column_data(field))
+          cout << l << '\n';
+        return 0;
+      } else if(cmd == "rm") {
+        my_ctx.negate();
+        my_ctx.push();
+      } else if(cmd == "rmexcept") {
+        my_ctx.push();
+      } else if(cmd == "neg") {
+        my_ctx.negate();
+      } else if(cmd == "push") {
+        my_ctx.push();
+      } else if(cmd == "quit") return 0;
+    }
+  } catch(const out_of_range&e) {
+    fieldname_err(cmd, field);
   }
 
   // print buffer
