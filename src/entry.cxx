@@ -30,7 +30,6 @@
  *************************************************/
 
 #include <ctype.h>
-#include <stdlib.h>
 #include <iostream>
 #include <fstream>
 
@@ -39,19 +38,6 @@
 #include "zsdatable.hpp"
 
 using namespace std;
-
-__attribute__((noreturn)) static void zerror(const string &s) {
-  cerr << "zsdatab-entry: ERROR: " << s << "\n";
-  exit(1);
-}
-
-static void zwarn(const string &s) {
-  clog << "zsdatab-entry: WARNING: " << s << "\n";
-}
-
-__attribute__((noreturn)) static void fieldname_err(const string &cmd, const string &field) {
-  zerror("command " + cmd + ": unknown fieldname '" + field + "'");
-}
 
 static string my_tolower(string instr) {
   transform(instr.begin(), instr.end(), instr.begin(), ::tolower);
@@ -93,14 +79,23 @@ int main(int argc, char *argv[]) {
   } else if(argc == 2) {
     string tmp;
     ifstream in(argv[1]);
-    if(!in) zerror(string(argv[1]) + ": file not found");
+    if(!in) {
+      cerr << "zsdatab-entry: ERROR: " << argv[1] << ": file not found\n";
+      return 1;
+    }
     while(getline(in, tmp)) cout << tmp << "\n";
     return 0;
   }
 
   zsdatab::table my_table(argv[1]);
-  if(!my_table.good()) zerror(string(argv[1]) + ": metadata read failed");
-  if(!my_table.read()) zerror(string(argv[1]) + ": file not found");
+  if(!my_table.good()) {
+    cerr << "zsdatab-entry: ERROR: " << argv[1] << ": metadata read failed\n";
+    return 1;
+  }
+  if(!my_table.read()) {
+    cerr << "zsdatab-entry: ERROR: " << argv[1] << ": file not found\n";
+    return 1;
+  }
   const size_t colcnt = my_table.get_metadata().get_field_count();
 
   zsdatab::context my_ctx(my_table);
@@ -131,9 +126,15 @@ int main(int argc, char *argv[]) {
           else field = commands[0];
         } else if(cmd == "rm" || cmd == "rmexcept" || cmd == "neg" || cmd == "quit" || cmd == "push") {
           // do nothing
-        } else zerror("unknown command '" + cmd + "'");
+        } else {
+          cerr << "zsdatab-entry: ERROR: unknown command '" << cmd << "'\n";
+          return 1;
+        }
 
-        if(!args_ok) zerror("command " + cmd + ": invalid args");
+        if(!args_ok) {
+          cerr << "zsdatab-entry: ERROR: command " << cmd << ": invalid args\n";
+          return 1;
+        }
       }
 
       // command execution
@@ -207,7 +208,8 @@ int main(int argc, char *argv[]) {
       } else if(cmd == "quit") return 0;
     }
   } catch(const out_of_range&e) {
-    fieldname_err(cmd, field);
+    cerr << "zsdatab-entry: ERROR: command " << cmd << ": unknown fieldname '" << field << "'\n";
+    return 1;
   }
 
   // print buffer
