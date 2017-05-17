@@ -14,7 +14,7 @@ configure_file(FindZsdatable.cmake.in "${PROJECT_BINARY_DIR}/FindZsdatable.cmake
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 add_library(zsdatable SHARED src/context.cxx src/context_common.cxx src/metadata.cxx src/operators.cxx src/table.cxx src/zsdatable.hpp)
-set_target_properties(zsdatable PROPERTIES VERSION "3.0.0" SOVERSION 3)
+set_target_properties(zsdatable PROPERTIES VERSION "3.1.0" SOVERSION 3)
 
 add_executable(zsdatab-entry src/entry.cxx)
 target_link_libraries(zsdatab-entry zsdatable)
