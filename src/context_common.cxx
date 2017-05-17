@@ -39,7 +39,7 @@ namespace zsdatab {
   namespace intern {
     void op_table_compat_chk(const table& a, const table& b) {
       if(&a.get_metadata() != &b.get_metadata())
-        throw invalid_argument("zsdatab::intern::op_table_compat_chk");
+        throw invalid_argument(__PRETTY_FUNCTION__);
     }
 
     context_common::context_common(const buffer_interface &bif)

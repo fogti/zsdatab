@@ -40,7 +40,27 @@ static auto deserialize_line(const string &line, char my_sep) -> vector<string> 
   vector<string> ret;
   string col;
   istringstream ss(line);
-  while(getline(ss, col, my_sep)) ret.push_back(col);
+  while(getline(ss, col, my_sep)) {
+    bool escape = false;
+    string col2;
+    for(auto &&c : col) {
+      if(!escape) {
+        // default mode
+        if(c == '\\') escape = true;
+        else          col2 += c;
+      } else {
+        // escaped mode
+        switch(c) {
+          case '-': break;
+          case 'd': col2 += my_sep; break;
+          case 'n': col2 += '\n'; break;
+          default:  col2 += c;
+        }
+        escape = false;
+      }
+    }
+    ret.push_back(col2);
+  }
   return ret;
 }
 
@@ -48,10 +68,23 @@ static auto serialize_line(const vector<string> &cols, char my_sep) -> string {
   string ret;
   bool fi = true;
 
-  for(auto i : cols) {
+  for(auto &&i : cols) {
     if(!fi) ret += my_sep;
-    ret += i;
     fi = false;
+
+    if(i.empty()) {
+      ret += "\\-";
+      break;
+    }
+
+    for(auto &&c : i)
+      switch(c) {
+        case '\\': ret += "\\\\"; break;
+        case '\n': ret += "\\n"; break;
+        default:
+          if(c == my_sep) ret += "\\d";
+          else ret += c;
+      }
   }
 
   return ret;
@@ -109,7 +142,7 @@ namespace zsdatab {
     const vector<string> &cols = _d->cols;
     const auto it = find(cols.begin(), cols.end(), colname);
     if(it == cols.end())
-      throw out_of_range("zsdatab::metadata::get_field_nr");
+      throw out_of_range(__PRETTY_FUNCTION__);
     return static_cast<size_t>(distance(cols.begin(), it));
   }
 
