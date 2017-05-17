@@ -74,7 +74,7 @@ static auto serialize_line(const vector<string> &cols, char my_sep) -> string {
 
     if(i.empty()) {
       ret += "\\-";
-      break;
+      continue;
     }
 
     for(auto &&c : i)
