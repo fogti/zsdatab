@@ -1,7 +1,7 @@
 /*************************************************
  *      program: zsdatab-entry
  *      package: zsdatab
- *      version: 0.1.0
+ *      version: 0.1.5
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
             "  push                                update table file\n"
             "\n"
             "Commands can be joined\n\n"
-            "zsdatab v0.0.9 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>\n"
+            "zsdatab v0.1.5 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>\n"
             "released under X11-License\n";
     return 1;
   } else if(argc == 2) {

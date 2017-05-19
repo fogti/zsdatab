@@ -2,7 +2,7 @@
  *        class: zsdatab::metadata
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.1.0
+ *      version: 0.1.5
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -122,6 +122,11 @@ namespace zsdatab {
     return *this;
   }
 
+  metadata& metadata::operator+=(const vector<string> &o) {
+    _d->cols.insert(_d->cols.end(), o.begin(), o.end());
+    return *this;
+  }
+
   void metadata::swap(metadata &o) noexcept {
     std::swap(this->_d, o._d);
   }
@@ -130,12 +135,20 @@ namespace zsdatab {
     return _d->valid;
   }
 
+  auto metadata::get_cols() const noexcept -> const vector<string>& {
+    return _d->cols;
+  }
+
   bool metadata::empty() const noexcept {
     return _d->cols.empty();
   }
 
   auto metadata::get_field_count() const -> size_t {
     return _d->cols.size();
+  }
+
+  bool metadata::has_field(const string &colname) const noexcept {
+    return find(_d->cols.begin(), _d->cols.end(), colname) != _d->cols.end();
   }
 
   auto metadata::get_field_nr(const string &colname) const -> size_t {
@@ -148,6 +161,22 @@ namespace zsdatab {
 
   auto metadata::get_field_name(const size_t n) const -> string {
     return _d->cols.at(n);
+  }
+
+  bool metadata::rename_field(const string &from, const string &to) {
+    vector<string> &cols = _d->cols;
+    auto it = find(cols.begin(), cols.end(), from);
+    if(it == cols.end()) return false;
+    *it = to;
+    return true;
+  }
+
+  void metadata::separator(char sep) noexcept {
+    _d->sep = sep;
+  }
+
+  char metadata::separator() const noexcept {
+    return _d->sep;
   }
 
   auto metadata::deserialize(const string &line) const -> vector<string> {
@@ -165,7 +194,7 @@ namespace zsdatab {
   bool operator==(const metadata &a, const metadata &b) {
     const auto &ad = *a._d;
     const auto &bd = *b._d;
-    return (ad.valid == bd.valid) && (ad.sep == bd.sep) && (ad.cols == bd.cols);
+    return (ad.valid == bd.valid) && (ad.cols.size() == bd.cols.size());
   }
 
   auto operator<<(ostream& stream, const metadata::impl& meta) -> ostream& {
