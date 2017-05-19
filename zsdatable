@@ -3,7 +3,7 @@
 ##################################################
 #      program: zsdatable
 #      package: zsdatab
-#      version: 0.0.9
+#      version: 0.1.5
 ##################################################
 #       author: Erik Kai Alain Zscheile
 #        email: erik.zscheile.ytrizja@gmail.com
@@ -43,7 +43,7 @@ Commands:"
   sort [-u]                 sort table entries
   mv  DESTINATION           move table to DESTINATION
 
-zsdatab v0.0.9 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>
+zsdatab v0.1.5 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>
 released under X11-License
 EOF
   exit 1

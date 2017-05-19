@@ -1,7 +1,7 @@
 /*************************************************
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.1.0
+ *      version: 0.1.5
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -53,8 +53,16 @@ namespace zsdatab {
     using pimpl = std::experimental::propagate_const<std::unique_ptr<T>>;
   }
 
+  class container_interface {
+   public:
+    virtual ~container_interface() noexcept = default;
+
+    virtual bool good() const noexcept = 0;
+    virtual bool empty() const noexcept = 0;
+  };
+
   // metadata class
-  class metadata final {
+  class metadata final : public container_interface {
     struct impl;
     intern::pimpl<impl> _d;
 
@@ -73,15 +81,23 @@ namespace zsdatab {
     ~metadata() noexcept;
 
     auto operator=(const metadata &o) -> metadata&;
+    auto operator+=(const std::vector<std::string> &o) -> metadata&;
 
     void swap(metadata &o) noexcept;
 
     bool good() const noexcept;
     bool empty() const noexcept;
 
+    auto get_cols() const noexcept -> const std::vector<std::string>&;
     auto get_field_count() const -> size_t;
+    bool has_field(const std::string &colname) const noexcept;
     auto get_field_nr(const std::string &colname) const -> size_t;
     auto get_field_name(const size_t n) const -> std::string;
+    bool rename_field(const std::string &from, const std::string &to);
+
+    // simple setters and getters
+    void separator(char sep) noexcept;
+    char separator() const noexcept;
 
     auto deserialize(const std::string &line) const -> std::vector<std::string>;
     auto serialize(const std::vector<std::string> &line) const -> std::string;
@@ -97,12 +113,10 @@ namespace zsdatab {
 
   // buffer_interface class:
   //  common interface for table, context and const_context
-  class buffer_interface {
+  class buffer_interface : public container_interface {
    public:
     virtual ~buffer_interface() noexcept = default;
 
-    virtual bool good() const noexcept = 0;
-    virtual bool empty() const noexcept = 0;
     virtual auto get_metadata() const noexcept -> const metadata& = 0;
     virtual auto get_data() const noexcept -> const buffer_t& = 0;
     virtual auto get_const_table() const noexcept -> const table& = 0;
@@ -210,6 +224,10 @@ namespace zsdatab {
       context_base(const T &&tab) = delete;
       virtual ~context_base() noexcept = default;
 
+      virtual auto get_const_table() const noexcept -> const table& final
+        { return _table; }
+
+      // delegators
       template<class B>
       auto operator=(const B &o) -> context_base& {
         context_common::operator=(o);
@@ -221,9 +239,6 @@ namespace zsdatab {
         context_common::operator+=(o);
         return *this;
       }
-
-      virtual auto get_const_table() const noexcept -> const table& final
-        { return _table; }
 
      protected:
       T &_table;
@@ -264,5 +279,16 @@ namespace zsdatab {
     // rm = negate push
     // rmexcept = push
   };
+
+  /* inner_join - join to buffers into a table via inner join (common subset)
+   * @return : table : composed table
+   *         - buffer : ccomposed buffer
+   *
+   * @param sep : char : (metadata) column separator
+   *
+   * @param a, b : buffer_interface : buffers to join
+   *             - metadata.cols (equal names are assumed equivalent and will be joined)
+   */
+  table inner_join(char sep, const buffer_interface &a, const buffer_interface &b);
 }
 #endif
