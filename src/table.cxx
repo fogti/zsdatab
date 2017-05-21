@@ -2,7 +2,7 @@
  *        class: zsdatab::table
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.1.5
+ *      version: 0.1.6
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -43,15 +43,13 @@ using namespace std;
 namespace zsdatab {
   class table::impl final {
    public:
+    bool valid;
+    bool modified;
+    metadata meta;
+    buffer_t data;
     std::string path;
 
-    bool _valid;
-    bool _modified;
-    metadata _meta;
-    buffer_t _data;
-    std::string _lock_path;
-
-    impl(): _valid(false), _modified(false) { }
+    impl(): valid(false), modified(false) { }
 
     impl(const impl &o) = default;
     impl(impl &&o) = default;
@@ -62,22 +60,20 @@ namespace zsdatab {
   table::table(const string &name):
     _d(new table::impl())
   {
-    string &path = _d->path = name;
-
-    bool &_valid = _d->_valid;
-    metadata &_meta = _d->_meta;
-    string &_lock_path = _d->_lock_path;
+    bool &valid = _d->valid;
+    metadata &meta = _d->meta;
+    string &path = _d->path;
 
     {
-      ifstream in((path + ".meta").c_str());
+      ifstream in((name + ".meta").c_str());
       if(!in) {
-        _valid = false;
+        valid = false;
       } else {
-        in >> _meta;
-        _valid = !_meta.empty();
+        in >> meta;
+        valid = !meta.empty();
       }
     }
-    if(_valid) {
+    if(valid) {
       string host;
       {
         char tmp[65];
@@ -86,13 +82,13 @@ namespace zsdatab {
         host = tmp;
       }
 
-      _lock_path = path + ".#" + host + '.' + to_string(getpid());
+      path = name + ".#" + host + '.' + to_string(getpid());
 
       while(1) {
-        if(!::link(path.c_str(), _lock_path.c_str())) {
+        if(!::link(name.c_str(), path.c_str())) {
           struct stat st;
-          if(stat(path.c_str(), &st) == -1 || st.st_nlink != 2) {
-            ::unlink(_lock_path.c_str());
+          if(stat(name.c_str(), &st) == -1 || st.st_nlink != 2) {
+            ::unlink(path.c_str());
             sleep(1);
           } else {
             break;
@@ -106,8 +102,8 @@ namespace zsdatab {
   table::table(const metadata &meta):
     _d(new table::impl())
   {
-    _d->_valid = meta.good();
-    _d->_meta = meta;
+    _d->valid = meta.good();
+    _d->meta = meta;
   }
 
   table::table(const table &o):
@@ -117,8 +113,8 @@ namespace zsdatab {
 
   table::~table() noexcept {
     write();
-    if(!_d->_lock_path.empty())
-      ::unlink(_d->_lock_path.c_str());
+    if(!_d->path.empty())
+      ::unlink(_d->path.c_str());
   }
 
   void table::swap(table &o) noexcept {
@@ -126,11 +122,11 @@ namespace zsdatab {
   }
 
   bool table::good() const noexcept {
-    return _d->_valid;
+    return _d->valid;
   }
 
   bool table::empty() const noexcept {
-    return _d->_data.empty();
+    return _d->data.empty();
   }
 
   bool table::read() {
@@ -147,7 +143,7 @@ namespace zsdatab {
     // we must do carefully error handling here because
     // the destructor can't release the lock on the table if we don't do this
 
-    if(good() && _d->_modified && !_d->path.empty()) {
+    if(good() && _d->modified && !_d->path.empty()) {
       try {
         ofstream out(_d->path.c_str());
         if(!out) {
@@ -167,29 +163,27 @@ namespace zsdatab {
         cerr << fetpf << "(unknown error - untraceable)\n";
         return false;
       }
-      _d->_modified = false;
+      _d->modified = false;
     }
     return true;
   }
 
   auto table::get_metadata() const noexcept -> const metadata& {
-    return _d->_meta;
-  }
-
-  auto table::get_data() const noexcept -> const buffer_t& {
-    return _d->_data;
+    return _d->meta;
   }
 
   auto table::get_const_table() const noexcept -> const table& {
     return *this;
   }
 
-  void table::update_data(const buffer_t &n) {
-    if(_d->_data != n) {
-      _d->_modified = true;
-      _d->_data = n;
-      // we assume that users don't push very often
-      _d->_data.shrink_to_fit();
+  auto table::data() const noexcept -> const buffer_t& {
+    return _d->data;
+  }
+
+  void table::data(const buffer_t &n) {
+    if(_d->data != n) {
+      _d->modified = true;
+      _d->data = n;
     }
   }
 }

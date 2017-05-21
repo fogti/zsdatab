@@ -1,5 +1,5 @@
 /*************************************************
- *        class: zsdatab::context
+ *         part: table mapping
  *      library: zsdatable
  *      package: zsdatab
  *      version: 0.1.6
@@ -32,19 +32,21 @@
 
 #include "zsdatable.hpp"
 
-using namespace std;
-
 namespace zsdatab {
-  const_context::const_context(const table &tab)
-    : intern::context_base<const table>(tab) { }
+  using namespace std;
 
-  const_context::const_context(const buffer_interface &o)
-    : intern::context_base<const table>(o.get_const_table()) { }
+  table table_map_fields(const buffer_interface &in, const unordered_map<string, string>& mappings) {
+    const metadata &old_meta = in.get_metadata();
+    metadata tmp_meta;
+    tmp_meta.separator(old_meta.separator());
 
-  context::context(table &tab)
-    : intern::context_base<table>(tab) { }
+    for(auto &&i : old_meta.get_cols()) {
+      const auto it = mappings.find(i);
+      tmp_meta += { (it != mappings.end() ? it->second : i) };
+    }
 
-  void context::push() {
-    _table.data(_buffer);
+    table ret(tmp_meta);
+    ret.data(in.data());
+    return ret;
   }
 }

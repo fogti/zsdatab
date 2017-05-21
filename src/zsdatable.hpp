@@ -1,8 +1,8 @@
 /*************************************************
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.1.5
- **************| *********************************
+ *      version: 0.1.6
+ **************| ********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
  **************| *********************************
@@ -33,6 +33,7 @@
 # define ZSDATABLE_HPP 1
 # include <istream>
 # include <ostream>
+# include <unordered_map>
 # include <vector>
 # include <string>
 
@@ -118,8 +119,9 @@ namespace zsdatab {
     virtual ~buffer_interface() noexcept = default;
 
     virtual auto get_metadata() const noexcept -> const metadata& = 0;
-    virtual auto get_data() const noexcept -> const buffer_t& = 0;
     virtual auto get_const_table() const noexcept -> const table& = 0;
+
+    virtual auto data() const noexcept -> const buffer_t& = 0;
   };
 
   // table class
@@ -148,9 +150,10 @@ namespace zsdatab {
     bool write() noexcept;
 
     auto get_metadata() const noexcept -> const metadata&;
-    auto get_data() const noexcept -> const buffer_t&;
     auto get_const_table() const noexcept -> const table&;
-    void update_data(const buffer_t &n);
+
+    auto data() const noexcept -> const buffer_t&;
+    void data(const buffer_t &n);
   };
 
   std::ostream& operator<<(std::ostream& stream, const table& tab);
@@ -174,7 +177,7 @@ namespace zsdatab {
       auto operator=(context_common &&o) -> context_common&;
       auto operator+=(const context_common &o) -> context_common&;
       auto operator+=(const buffer_interface &o) -> context_common&;
-      auto operator+=(std::vector<std::string> line) -> context_common&;
+      auto operator+=(const std::vector<std::string> &line) -> context_common&;
 
       context_common& pull();
 
@@ -186,19 +189,28 @@ namespace zsdatab {
       context_common& sort();
       context_common& uniq();
       context_common& negate();
+      context_common& filter(const size_t field, const std::string& value, const bool whole = true);
       context_common& filter(const std::string& field, const std::string& value, const bool whole = true);
 
       // change
+      context_common& set_field(const size_t field, const std::string& value);
+      context_common& append_part(const size_t field, const std::string& value);
+      context_common& remove_part(const size_t field, const std::string& value);
+      context_common& replace_part(const size_t field, const std::string& from, const std::string& to);
+
       context_common& set_field(const std::string& field, const std::string& value);
       context_common& append_part(const std::string& field, const std::string& value);
       context_common& remove_part(const std::string& field, const std::string& value);
       context_common& replace_part(const std::string& field, const std::string& from, const std::string& to);
 
       // report
+      auto get_column_data(const size_t colnr, bool _uniq = false) const -> std::vector<std::string>;
       auto get_column_data(const std::string &colname, bool _uniq = false) const -> std::vector<std::string>;
+
       auto get_metadata() const noexcept -> const metadata&;
-      auto get_data() const noexcept -> const buffer_t&;
       auto get_field_nr(const std::string &colname) const -> size_t;
+
+      auto data() const noexcept -> const buffer_t&;
 
       // main delegation and abstraction
       virtual auto get_const_table() const noexcept -> const table& = 0;
@@ -280,6 +292,40 @@ namespace zsdatab {
     // rmexcept = push
   };
 
+  namespace intern {
+    namespace ta {
+      struct action;
+    }
+  }
+
+  class transaction final {
+   public:
+    transaction(const metadata &m);
+    transaction(const transaction &o);
+    transaction(transaction&& o) = default;
+
+    void apply(intern::context_common &ctx) const;
+
+    transaction& operator+=(const std::vector<std::string> &line);
+
+    // select
+    transaction& clear();
+    transaction& sort();
+    transaction& uniq();
+    transaction& negate();
+    transaction& filter(const std::string& field, const std::string& value, const bool whole = true);
+
+    // change
+    transaction& set_field(const std::string& field, const std::string& value);
+    transaction& append_part(const std::string& field, const std::string& value);
+    transaction& remove_part(const std::string& field, const std::string& value);
+    transaction& replace_part(const std::string& field, const std::string& from, const std::string& to);
+
+   private:
+    const metadata _meta;
+    std::vector<std::shared_ptr<intern::ta::action>> _actions;
+  };
+
   /* inner_join - join to buffers into a table via inner join (common subset)
    * @return : table : composed table
    *         - buffer : ccomposed buffer
@@ -290,5 +336,8 @@ namespace zsdatab {
    *             - metadata.cols (equal names are assumed equivalent and will be joined)
    */
   table inner_join(char sep, const buffer_interface &a, const buffer_interface &b);
+
+  // table_map_fields - map field names (mappings: {from, to}) (e.g. for an following join)
+  table table_map_fields(const buffer_interface &in, const std::unordered_map<std::string, std::string>& mappings);
 }
 #endif
