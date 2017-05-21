@@ -2,7 +2,7 @@
  *        class: zsdatab::metadata
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.1.5
+ *      version: 0.1.6
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -95,15 +95,13 @@ namespace zsdatab {
    public:
     vector<string> cols;
     char sep;
-    bool valid;
 
-    impl(): sep(' '), valid(false) { }
+    impl(): sep(' ') { }
     ~impl() noexcept = default;
 
     void swap(impl &o) noexcept {
       std::swap(this->cols, o.cols);
       std::swap(this->sep, o.sep);
-      std::swap(this->valid, o.valid);
     }
   };
 
@@ -132,7 +130,7 @@ namespace zsdatab {
   }
 
   bool metadata::good() const noexcept {
-    return _d->valid;
+    return !empty();
   }
 
   auto metadata::get_cols() const noexcept -> const vector<string>& {
@@ -192,9 +190,7 @@ namespace zsdatab {
   }
 
   bool operator==(const metadata &a, const metadata &b) {
-    const auto &ad = *a._d;
-    const auto &bd = *b._d;
-    return (ad.valid == bd.valid) && (ad.cols.size() == bd.cols.size());
+    return (a._d->cols.size() == b._d->cols.size());
   }
 
   auto operator<<(ostream& stream, const metadata::impl& meta) -> ostream& {

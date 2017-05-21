@@ -2,7 +2,7 @@
  *         part: table joining
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.1.5
+ *      version: 0.1.6
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -89,8 +89,8 @@ namespace zsdatab {
     table ret(metatmp);
     vector<vector<string>> table_data;
 
-    for(auto &&x : a.get_data()) {
-      for(auto &&y : b.get_data()) {
+    for(auto &&x : a.data()) {
+      for(auto &&y : b.data()) {
         bool match = true;
         vector<string> line(metatmp.get_field_count());
         for(auto &&col : merge_cols) {
@@ -125,7 +125,7 @@ namespace zsdatab {
       }
     }
 
-    ret.update_data(table_data);
+    ret.data(table_data);
     return ret;
   }
 }
