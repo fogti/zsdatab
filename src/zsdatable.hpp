@@ -1,7 +1,7 @@
 /*************************************************
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.1.6
+ *      version: 0.2.0
  **************| ********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -41,6 +41,7 @@
 # include <algorithm>
 # include <utility>
 # include <memory>
+# include <exception>
 
 # include <experimental/propagate_const>
 
@@ -68,6 +69,7 @@ namespace zsdatab {
 
    public:
     metadata();
+    metadata(const char sep);
     metadata(const metadata &o);
     metadata(metadata &&o);
 
@@ -89,7 +91,7 @@ namespace zsdatab {
     bool rename_field(const std::string &from, const std::string &to);
 
     // simple setters and getters
-    void separator(char sep) noexcept;
+    void separator(const char sep) noexcept;
     char separator() const noexcept;
 
     auto deserialize(const std::string &line) const -> std::vector<std::string>;
@@ -117,10 +119,30 @@ namespace zsdatab {
     virtual auto data() const noexcept -> const buffer_t& = 0;
   };
 
-  // table class
-  class table final : public buffer_interface {
-    struct impl;
-    intern::pimpl<impl> _d;
+  class table_clone_error : public std::runtime_error {
+   public:
+    table_clone_error(const char *w);
+  };
+
+  // table_interface class:
+  //  common interface for tables
+  class table_interface {
+   public:
+    virtual ~table_interface() noexcept = default;
+
+    virtual bool good() const noexcept = 0;
+    virtual bool empty() const noexcept = 0;
+
+    virtual auto get_metadata() const noexcept -> const metadata& = 0;
+    virtual auto data() const noexcept -> const buffer_t& = 0;
+    virtual void data(const buffer_t &n) = 0;
+
+    virtual auto clone() const -> std::shared_ptr<table_interface> = 0;
+  };
+
+  // table (delegating) class
+  class table final : public buffer_interface, public table_interface {
+    std::shared_ptr<table_interface> _t;
 
    public:
     // for permanent tables
@@ -128,25 +150,24 @@ namespace zsdatab {
 
     // for in-memory tables
     table(const metadata &_meta);
+    table(const metadata &_meta, const buffer_t &n);
 
-    table(const table &o);
-    table(table &&o);
-
-    virtual ~table() noexcept;
-
-    void swap(table &o) noexcept;
+    table(std::shared_ptr<table_interface> o);
+    table(std::shared_ptr<table_interface> &&o);
+    table(const table &o) = default;
+    table(table &&o) = default;
+    virtual ~table() noexcept = default;
 
     bool good() const noexcept;
     bool empty() const noexcept;
-
-    bool read();
-    bool write() noexcept;
 
     auto get_metadata() const noexcept -> const metadata&;
     auto get_const_table() const noexcept -> const table&;
 
     auto data() const noexcept -> const buffer_t&;
     void data(const buffer_t &n);
+
+    auto clone() const -> std::shared_ptr<table_interface>;
   };
 
   std::ostream& operator<<(std::ostream& stream, const table& tab);
@@ -243,9 +264,14 @@ namespace zsdatab {
       T &_table;
     };
 
+    template<class Ta, class Tb>
+    context_base<Ta> operator+(const context_base<Ta> &a, const context_base<Tb> &b) {
+      return context_base<Ta>(a) += b;
+    }
+
     template<class T>
-    context_base<T> operator+(const context_base<T> &a, const context_base<T> &b) {
-      return context_base<T>(a) += b;
+    context_base<T> operator+(const context_base<const T> &a, const context_base<T> &b) {
+      return (context_base<T>(b) = a) += b;
     }
   }
 

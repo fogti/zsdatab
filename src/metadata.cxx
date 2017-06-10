@@ -2,7 +2,7 @@
  *        class: zsdatab::metadata
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.1.6
+ *      version: 0.2.0
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -108,6 +108,12 @@ namespace zsdatab {
   metadata::metadata():
     _d(new metadata::impl()) { }
 
+  metadata::metadata(const char sep):
+    metadata()
+  {
+    _d->sep = sep;
+  }
+
   metadata::metadata(const metadata &o):
     _d(new metadata::impl(*o._d)) { }
 
@@ -138,19 +144,20 @@ namespace zsdatab {
   }
 
   bool metadata::empty() const noexcept {
-    return _d->cols.empty();
+    return get_cols().empty();
   }
 
   auto metadata::get_field_count() const -> size_t {
-    return _d->cols.size();
+    return get_cols().size();
   }
 
   bool metadata::has_field(const string &colname) const noexcept {
-    return find(_d->cols.begin(), _d->cols.end(), colname) != _d->cols.end();
+    const auto &cols = get_cols();
+    return find(cols.begin(), cols.end(), colname) != cols.end();
   }
 
   auto metadata::get_field_nr(const string &colname) const -> size_t {
-    const vector<string> &cols = _d->cols;
+    const auto &cols = get_cols();
     const auto it = find(cols.begin(), cols.end(), colname);
     if(it == cols.end())
       throw out_of_range(__PRETTY_FUNCTION__);
@@ -158,18 +165,18 @@ namespace zsdatab {
   }
 
   auto metadata::get_field_name(const size_t n) const -> string {
-    return _d->cols.at(n);
+    return get_cols().at(n);
   }
 
   bool metadata::rename_field(const string &from, const string &to) {
-    vector<string> &cols = _d->cols;
+    auto &cols = _d->cols;
     auto it = find(cols.begin(), cols.end(), from);
     if(it == cols.end()) return false;
     *it = to;
     return true;
   }
 
-  void metadata::separator(char sep) noexcept {
+  void metadata::separator(const char sep) noexcept {
     _d->sep = sep;
   }
 

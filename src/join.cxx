@@ -2,7 +2,7 @@
  *         part: table joining
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.1.6
+ *      version: 0.2.0
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -47,13 +47,11 @@ namespace zsdatab {
   }
 
   table inner_join(char sep, const buffer_interface &a, const buffer_interface &b) {
-    using namespace std;
-    metadata metatmp;
-    metatmp.separator(sep);
-
     const metadata &ma = a.get_metadata();
     const metadata &mb = b.get_metadata();
+    metadata mt(sep);
 
+    using namespace std;
     // compute column names
     map<string, intern::column_join> merge_cols;
     map<string, intern::column_join_from_where> join_cols;
@@ -65,34 +63,32 @@ namespace zsdatab {
         else
           cols.push_back(i);
       }
-      metatmp += cols;
+      mt += cols;
 
       for(auto &&i : cols) {
-        join_cols[i] = intern::column_join_from_where(
-                 (merge_cols.find(i) != merge_cols.end()) ? intern::column_join_from_where::FROM_COMMON
-                 : (ma.has_field(i) ? intern::column_join_from_where::FROM_A
-                   : (mb.has_field(i) ? intern::column_join_from_where::FROM_B
-                     : intern::column_join_from_where::FROM_COMMON
-                     )
-                   )
-               );
+#define CJFWV(V) join_cols[i] = intern::column_join_from_where::FROM_##V
+        CJFWV(COMMON);
+        if(merge_cols.find(i) == merge_cols.end()) {
+          if(ma.has_field(i))      CJFWV(A);
+          else if(mb.has_field(i)) CJFWV(B);
+        }
+#undef CJFWV
       }
     }
 
     for(auto &i : merge_cols) {
       i.second.a = ma.get_field_nr(i.first);
       i.second.b = mb.get_field_nr(i.first);
-      i.second.c = metatmp.get_field_nr(i.first);
+      i.second.c = mt.get_field_nr(i.first);
     }
 
     // compute table
-    table ret(metatmp);
     vector<vector<string>> table_data;
 
     for(auto &&x : a.data()) {
       for(auto &&y : b.data()) {
         bool match = true;
-        vector<string> line(metatmp.get_field_count());
+        vector<string> line(mt.get_field_count());
         for(auto &&col : merge_cols) {
           const string value = x[col.second.a];
           if(value == y[col.second.b]) {
@@ -108,7 +104,7 @@ namespace zsdatab {
           for(size_t i = 0; i < line.size(); ++i) {
             if(!line[i].empty()) continue;
 
-            const string colname = metatmp.get_field_name(i);
+            const string colname = mt.get_field_name(i);
             switch(join_cols[colname]) {
               case intern::column_join_from_where::FROM_A:
                 line[i] = x[ma.get_field_nr(colname)];
@@ -125,7 +121,6 @@ namespace zsdatab {
       }
     }
 
-    ret.data(table_data);
-    return ret;
+    return table(mt, table_data);
   }
 }

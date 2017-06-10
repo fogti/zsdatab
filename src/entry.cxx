@@ -1,7 +1,7 @@
 /*************************************************
  *      program: zsdatab-entry
  *      package: zsdatab
- *      version: 0.1.6
+ *      version: 0.2.0
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
             "  push                                update table file\n"
             "\n"
             "Commands can be joined\n\n"
-            "zsdatab v0.1.6 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>\n"
+            "zsdatab v0.2.0 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>\n"
             "released under X11-License\n";
     return 1;
   } else if(argc == 2) {
@@ -89,11 +89,7 @@ int main(int argc, char *argv[]) {
 
   zsdatab::table my_table(argv[1]);
   if(!my_table.good()) {
-    cerr << "zsdatab-entry: ERROR: " << argv[1] << ": metadata read failed\n";
-    return 1;
-  }
-  if(!my_table.read()) {
-    cerr << "zsdatab-entry: ERROR: " << argv[1] << ": file not found\n";
+    cerr << "zsdatab-entry: ERROR: " << argv[1] << ": file not found / read failed\n";
     return 1;
   }
   const size_t colcnt = my_table.get_metadata().get_field_count();
