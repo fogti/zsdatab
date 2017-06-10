@@ -3,7 +3,7 @@
 ##################################################
 #      program: zsdatable
 #      package: zsdatab
-#      version: 0.1.6
+#      version: 0.2.0
 ##################################################
 #       author: Erik Kai Alain Zscheile
 #        email: erik.zscheile.ytrizja@gmail.com
@@ -40,10 +40,9 @@ Commands:"
   mmk METAFILE              make table from metafile
   rm                        delete table
   chmod MODE                chmod table
-  sort [-u]                 sort table entries
   mv  DESTINATION           move table to DESTINATION
 
-zsdatab v0.1.6 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>
+zsdatab v0.2.0 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>
 released under X11-License
 EOF
   exit 1
@@ -91,13 +90,6 @@ case "$1" in
 
   (chmod)
     "$@" "$TABLE" "$TABLE.meta"
-    ;;
-
-  (sort)
-    TMPFILE="$(mktemp)"
-    (( $? == 0 )) || zerror "cannot create tmpfile"
-    trap "rm -f \"$TMPFILE\"; exit" EXIT
-    "$@" "$TABLE" > "$TMPFILE" && mv -f "$TMPFILE" "$TABLE"
     ;;
 
   (mv)

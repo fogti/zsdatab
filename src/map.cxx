@@ -2,7 +2,7 @@
  *         part: table mapping
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.1.6
+ *      version: 0.2.0
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -36,17 +36,14 @@ namespace zsdatab {
   using namespace std;
 
   table table_map_fields(const buffer_interface &in, const unordered_map<string, string>& mappings) {
-    const metadata &old_meta = in.get_metadata();
-    metadata tmp_meta;
-    tmp_meta.separator(old_meta.separator());
+    const metadata &mo = in.get_metadata();
+    metadata mt(mo.separator());
 
-    for(auto &&i : old_meta.get_cols()) {
+    for(auto &&i : mo.get_cols()) {
       const auto it = mappings.find(i);
-      tmp_meta += { (it != mappings.end() ? it->second : i) };
+      mt += { (it != mappings.end() ? it->second : i) };
     }
 
-    table ret(tmp_meta);
-    ret.data(in.data());
-    return ret;
+    return table(mt, in.data());
   }
 }

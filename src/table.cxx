@@ -2,7 +2,7 @@
  *        class: zsdatab::table
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.1.6
+ *      version: 0.2.0
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -41,135 +41,181 @@
 using namespace std;
 
 namespace zsdatab {
-  class table::impl final {
-   public:
-    bool valid;
-    bool modified;
-    metadata meta;
-    buffer_t data;
-    std::string path;
+  table_clone_error::table_clone_error(const char *w): runtime_error(w) { }
 
-    impl(): valid(false), modified(false) { }
+  // concrete table implementations
+  namespace intern {
+    class permanent_table : public table_interface {
+      bool _valid;
+      bool _modified;
+      metadata _meta;
+      buffer_t _data;
+      std::string _path;
 
-    impl(const impl &o) = default;
-    impl(impl &&o) = default;
-    ~impl() noexcept = default;
-  };
-
-  // for permanent tables
-  table::table(const string &name):
-    _d(new table::impl())
-  {
-    bool &valid = _d->valid;
-    metadata &meta = _d->meta;
-    string &path = _d->path;
-
-    {
-      ifstream in((name + ".meta").c_str());
-      if(!in) {
-        valid = false;
-      } else {
-        in >> meta;
-        valid = !meta.empty();
-      }
-    }
-    if(valid) {
-      string host;
+     public:
+      explicit permanent_table(const string &name)
+        : _valid(false), _modified(false)
       {
-        char tmp[65];
-        gethostname(tmp, 64);
-        tmp[64] = 0;
-        host = tmp;
-      }
+        {
+          ifstream in((name + ".meta").c_str());
+          if(in) {
+            in >> _meta;
+            _valid = !_meta.empty();
+          }
+        }
+        if(!_valid) return;
 
-      path = name + ".#" + host + '.' + to_string(getpid());
+        string host;
+        {
+          char tmp[65];
+          gethostname(tmp, 64);
+          tmp[64] = 0;
+          host = tmp;
+        }
 
-      while(1) {
-        if(!::link(name.c_str(), path.c_str())) {
-          struct stat st;
-          if(stat(name.c_str(), &st) == -1 || st.st_nlink != 2) {
-            ::unlink(path.c_str());
-            sleep(1);
-          } else {
-            break;
+        _path = name + ".#" + host + '.' + to_string(getpid());
+
+        struct stat st;
+        while(
+                 !::link(name.c_str(), _path.c_str())
+              && (
+                     stat(name.c_str(), &st) == -1
+                  || st.st_nlink != 2
+                 )
+             ) {
+          ::unlink(_path.c_str());
+          sleep(1);
+        }
+
+        {
+          ifstream in(_path.c_str());
+          if(!in) _valid = false;
+          else {
+            // use an in-memory table to get input, copy to _data
+            table tmpt(_meta);
+            in >> tmpt;
+            data(tmpt.data());
           }
         }
       }
-    }
+
+      ~permanent_table() noexcept {
+        static const string fetpf = "libzsdatable.so: ERROR: zsdatab::table::~table() (write) failed ";
+
+        if(good() && _modified && !_path.empty()) {
+          try {
+            ofstream out(_path.c_str());
+            if(!out)
+              cerr << fetpf << "(table open failed)\n";
+            else
+              out << table(_meta, data());
+          } catch(const length_error &e) {
+            cerr << fetpf << "(corrupt table data)\n"
+                    "  failure detected in: " << e.what() << '\n';
+          } catch(const exception &e) {
+            cerr << fetpf << "(unknown error)\n"
+                    "  failure detected in: " << e.what() << '\n';
+          } catch(...) {
+            cerr << fetpf << "(unknown error - untraceable)\n";
+          }
+        }
+
+        if(!_path.empty())
+          ::unlink(_path.c_str());
+      }
+
+      bool good() const noexcept {
+        return _valid;
+      }
+
+      bool empty() const noexcept {
+        return _data.empty();
+      }
+
+      auto get_metadata() const noexcept -> const metadata& {
+        return _meta;
+      }
+
+      auto data() const noexcept -> const buffer_t& {
+        return _data;
+      }
+
+      void data(const buffer_t &n) {
+        _modified |= (_data != n);
+        _data = n;
+      }
+
+      auto clone() const -> std::shared_ptr<table_interface> {
+        throw table_clone_error("zsdatab::intern::permanent_table::clone");
+      }
+    };
+
+    class in_memory_table : public table_interface {
+      const metadata _meta;
+      buffer_t _data;
+
+     public:
+      explicit in_memory_table(const metadata &o):
+        _meta(o) { }
+
+      in_memory_table(const metadata &o, const buffer_t &n):
+        _meta(o), _data(n) { }
+
+      ~in_memory_table() noexcept = default;
+
+      bool good() const noexcept {
+        return _meta.good();
+      }
+
+      bool empty() const noexcept {
+        return _data.empty();
+      }
+
+      auto get_metadata() const noexcept -> const metadata& {
+        return _meta;
+      }
+
+      auto data() const noexcept -> const buffer_t& {
+        return _data;
+      }
+
+      void data(const buffer_t &n) {
+        _data = n;
+      }
+
+      auto clone() const -> std::shared_ptr<table_interface> {
+        return make_shared<in_memory_table>(_meta, _data);
+      }
+    };
   }
+
+  // for permanent tables
+  table::table(const string &name)
+    : _t(new intern::permanent_table(name)) { }
 
   // for in-memory tables
-  table::table(const metadata &meta):
-    _d(new table::impl())
-  {
-    _d->valid = meta.good();
-    _d->meta = meta;
-  }
+  table::table(const metadata &meta)
+    : _t(new intern::in_memory_table(meta)) { }
 
-  table::table(const table &o):
-    _d(new table::impl(*o._d)) { }
+  table::table(const metadata &meta, const buffer_t &n)
+    : _t(new intern::in_memory_table(meta, n)) { }
 
-  table::table(table &&o) = default;
+  table::table(shared_ptr<table_interface> o)
+    : _t(o) { }
 
-  table::~table() noexcept {
-    write();
-    if(!_d->path.empty())
-      ::unlink(_d->path.c_str());
-  }
-
-  void table::swap(table &o) noexcept {
-    std::swap(_d, o._d);
-  }
+  table::table(shared_ptr<table_interface> &&o)
+    : _t(o) { }
 
   bool table::good() const noexcept {
-    return _d->valid;
+    return _t->good();
   }
 
   bool table::empty() const noexcept {
-    return _d->data.empty();
-  }
-
-  bool table::read() {
-    if(!good() || _d->path.empty()) return false;
-    ifstream in(_d->path.c_str());
-    if(!in) return false;
-    in >> *this;
-    return true;
-  }
-
-  bool table::write() noexcept {
-    static const string fetpf = "libzsdatable.so: ERROR: zsdatab::table::write() failed ";
-
-    // we must do carefully error handling here because
-    // the destructor can't release the lock on the table if we don't do this
-
-    if(good() && _d->modified && !_d->path.empty()) {
-      try {
-        ofstream out(_d->path.c_str());
-        if(!out) {
-          cerr << fetpf << "(table open failed)\n";
-          return false;
-        }
-        out << *this;
-      } catch(const length_error &e) {
-        cerr << fetpf << "(corrupt table data)\n"
-                "  failure detected in: " << e.what() << '\n';
-        return false;
-      } catch(const exception &e) {
-        cerr << fetpf << "(unknown error)\n"
-                "  failure detected in: " << e.what() << '\n';
-        return false;
-      } catch(...) {
-        cerr << fetpf << "(unknown error - untraceable)\n";
-        return false;
-      }
-      _d->modified = false;
-    }
-    return true;
+    return _t->empty();
   }
 
   auto table::get_metadata() const noexcept -> const metadata& {
-    return _d->meta;
+    return _t->get_metadata();
   }
 
   auto table::get_const_table() const noexcept -> const table& {
@@ -177,13 +223,16 @@ namespace zsdatab {
   }
 
   auto table::data() const noexcept -> const buffer_t& {
-    return _d->data;
+    return _t->data();
   }
 
   void table::data(const buffer_t &n) {
-    if(_d->data != n) {
-      _d->modified = true;
-      _d->data = n;
-    }
+    // copy on write
+    if(!_t.unique()) _t = _t->clone();
+    _t->data(n);
+  }
+
+  auto table::clone() const -> std::shared_ptr<table_interface> {
+    return _t->clone();
   }
 }

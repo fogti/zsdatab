@@ -2,7 +2,7 @@
  *         part: operators
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.1.6
+ *      version: 0.2.0
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -41,9 +41,7 @@ namespace zsdatab {
   }
 
   ostream& operator<<(ostream& stream, const table& tab) {
-    const_context ctx(tab);
-    stream << ctx;
-    return stream;
+    return (stream << const_context(tab));
   }
 
   istream& operator>>(istream& stream, table& tab) {
