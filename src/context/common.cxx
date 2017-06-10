@@ -45,67 +45,12 @@ namespace zsdatab {
     context_common::context_common(const buffer_interface &bif)
       : _buffer(bif.data()) { }
 
-    context_common& context_common::operator=(const context_common &o) {
-      return *this = static_cast<const buffer_interface&>(o);
-    }
-
-    context_common& context_common::operator=(const buffer_interface &o) {
-      if(this != &o) {
-        op_table_compat_chk(get_const_table(), o.get_const_table());
-        _buffer = o.data();
-      }
-      return *this;
-    }
-
-    context_common& context_common::operator=(context_common &&o) {
-      op_table_compat_chk(get_const_table(), o.get_const_table());
-      swap(_buffer, o._buffer);
-      return *this;
-    }
-
-    context_common& context_common::operator+=(const context_common &o) {
-      return *this += static_cast<const buffer_interface&>(o);
-    }
-
-    context_common& context_common::operator+=(const buffer_interface &o) {
-      if(this != &o) {
-        op_table_compat_chk(get_const_table(), o.get_const_table());
-        _buffer.reserve(_buffer.size() + o.data().size());
-        _buffer.insert(_buffer.end(), o.data().begin(), o.data().end());
-      } else {
-        _buffer.reserve(_buffer.size() << 1);
-        copy_n(_buffer.begin(), _buffer.size(), back_inserter(_buffer)); // assuming no overflow
-      }
-      return *this;
-    }
-
-    context_common& context_common::operator+=(const vector<string> &line) {
-      if(line.size() != get_metadata().get_field_count())
-        throw length_error(__PRETTY_FUNCTION__);
-      _buffer.push_back(line);
-      return *this;
-    }
-
     context_common& context_common::pull() {
       _buffer = get_const_table().data();
       return *this;
     }
 
-
-    bool context_common::good() const noexcept {
-      return true;
-    }
-
-    bool context_common::empty() const noexcept {
-      return _buffer.empty();
-    }
-
     // select
-    context_common& context_common::clear() noexcept {
-      _buffer.clear();
-      return *this;
-    }
-
     context_common& context_common::sort() {
       std::sort(_buffer.begin(), _buffer.end(),
         [](const vector<string> &a, const vector<string> &b) -> bool {
@@ -167,10 +112,6 @@ namespace zsdatab {
       return *this;
     }
 
-    context_common& context_common::filter(const string& field, const string& value, const bool whole) {
-      return filter(get_field_nr(field), value, whole);
-    }
-
     context_common& context_common::set_field(const size_t field, const string& value) {
       for(auto &l : _buffer)
         l[field] = value;
@@ -208,22 +149,6 @@ namespace zsdatab {
       return *this;
     }
 
-    context_common& context_common::set_field(const string& field, const string& value) {
-      return set_field(get_field_nr(field), value);
-    }
-
-    context_common& context_common::append_part(const string& field, const string& value) {
-      return append_part(get_field_nr(field), value);
-    }
-
-    context_common& context_common::remove_part(const string& field, const string& value) {
-      return remove_part(get_field_nr(field), value);
-    }
-
-    context_common& context_common::replace_part(const string& field, const string& from, const string& to) {
-      return replace_part(get_field_nr(field), from, to);
-    }
-
     // report
     vector<string> context_common::get_column_data(const string &colname, bool _uniq) const {
       vector<string> ret;
@@ -246,41 +171,6 @@ namespace zsdatab {
       }
 
       return ret;
-    }
-
-    auto context_common::get_metadata() const noexcept -> const metadata& {
-      return get_const_table().get_metadata();
-    }
-
-    auto context_common::get_field_nr(const string &colname) const -> size_t {
-      return get_metadata().get_field_nr(colname);
-    }
-
-    auto context_common::data() const noexcept -> const buffer_t& {
-      return _buffer;
-    }
-
-    bool operator==(const context_common &a, const context_common &b) noexcept {
-      return (&a.get_metadata() == &b.get_metadata()) && (a.data() == b.data());
-    }
-
-    bool operator!=(const context_common &a, const context_common &b) noexcept {
-      return !(a == b);
-    }
-
-    ostream& operator<<(ostream& stream, const context_common &ctx) {
-      if(!stream) return stream;
-      for(auto &&l : ctx._buffer)
-        stream << ctx.get_metadata().serialize(l) << '\n';
-      return stream;
-    }
-
-    istream& operator>>(istream& stream, context_common& ctx) {
-      if(!stream) return stream;
-      string tmp;
-      while(getline(stream, tmp))
-        ctx._buffer.push_back(ctx.get_metadata().deserialize(tmp));
-      return stream;
     }
   }
 }

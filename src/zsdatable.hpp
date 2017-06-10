@@ -54,16 +54,8 @@ namespace zsdatab {
     using pimpl = std::experimental::propagate_const<std::unique_ptr<T>>;
   }
 
-  class container_interface {
-   public:
-    virtual ~container_interface() noexcept = default;
-
-    virtual bool good() const noexcept = 0;
-    virtual bool empty() const noexcept = 0;
-  };
-
   // metadata class
-  class metadata final : public container_interface {
+  class metadata final {
     struct impl;
     intern::pimpl<impl> _d;
 
@@ -114,7 +106,8 @@ namespace zsdatab {
 
   // buffer_interface class:
   //  common interface for table, context and const_context
-  class buffer_interface : public container_interface {
+  //  provides an interface to a buffer and the associated metadata
+  class buffer_interface {
    public:
     virtual ~buffer_interface() noexcept = default;
 
@@ -180,8 +173,6 @@ namespace zsdatab {
       auto operator+=(const std::vector<std::string> &line) -> context_common&;
 
       context_common& pull();
-
-      bool good() const noexcept;
       bool empty() const noexcept;
 
       // select
@@ -217,10 +208,6 @@ namespace zsdatab {
 
      protected:
       buffer_t _buffer;
-
-     private:
-      friend std::ostream& operator<<(std::ostream& stream, const context_common &ctx);
-      friend std::istream& operator>>(std::istream& stream, context_common& ctx);
     };
 
     bool operator==(const context_common &a, const context_common &b) noexcept;
