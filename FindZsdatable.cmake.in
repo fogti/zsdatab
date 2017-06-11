@@ -7,6 +7,8 @@
 
 include(LibFindMacros)
 
+libfind_package(Zsdatable ZLIB)
+
 find_path(Zsdatable_INCLUDE_DIR
   NAMES zsdatable.hpp
   PATHS @INSTALL_INCLUDE_DIR@
@@ -20,5 +22,5 @@ find_library(Zsdatable_LIBRARY
 # Set the include dir variables and the libraries and let libfind_process do the rest.
 # NOTE: Singular variables for this library, plural for libraries - this lib depends on.
 set(Zsdatable_PROCESS_INCLUDES Zsdatable_INCLUDE_DIR)
-set(Zsdatable_PROCESS_LIBS Zsdatable_LIBRARY)
+set(Zsdatable_PROCESS_LIBS Zsdatable_LIBRARY ZLIB_LIBRARIES)
 libfind_process(Zsdatable)

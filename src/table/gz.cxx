@@ -36,8 +36,8 @@
 #include <fstream>
 #include <iostream>
 
+#include <gzstream.h>
 #include "table/packed.hpp"
-#include "3rdparty/gzstream/gzstream.h"
 
 namespace zsdatab {
   using namespace std;
