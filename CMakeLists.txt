@@ -15,11 +15,11 @@ configure_file(FindZsdatable.cmake.in "${PROJECT_BINARY_DIR}/FindZsdatable.cmake
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src" ${ZLIB_INCLUDE_DIRS})
 
-add_library(zsdatable SHARED src/3rdparty/gzstream/gzstream.C
+add_library(zsdatable SHARED src/3rdparty/gzstream/gzstream.cxx
                              src/context/common.cxx src/context/main.cxx src/context/operators.cxx src/context/wrappers.cxx
                              src/table/common.cxx src/table/gz.cxx src/table/main.cxx src/table/packed.cxx
                              src/join.cxx src/map.cxx src/metadata.cxx src/operators.cxx src/transaction.cxx src/zsdatable.hpp)
-set_target_properties(zsdatable PROPERTIES VERSION "7.0.1" SOVERSION 7)
+set_target_properties(zsdatable PROPERTIES VERSION "8.0.2" SOVERSION 8)
 target_link_libraries(zsdatable ZLIB::ZLIB)
 
 add_executable(zsdatab-entry src/entry.cxx)

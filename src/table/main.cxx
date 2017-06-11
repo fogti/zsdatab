@@ -2,7 +2,7 @@
  *        class: zsdatab::table
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.1
+ *      version: 0.2.2
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -72,24 +72,24 @@ namespace zsdatab {
       }
 
       ~permanent_table() noexcept {
-        static const string fetpf = "libzsdatable.so: ERROR: zsdatab::intern::permanent_table::~permanent_table() (write) failed ";
-
         if(good() && _modified && !_path.empty()) {
+#define FETPF "libzsdatable.so: ERROR: zsdatab::intern::permanent_table::~permanent_table() (write) failed "
           try {
             ofstream out(_path.c_str());
             if(!out)
-              cerr << fetpf << "(table open failed)\n";
+              cerr << FETPF << "(table open failed)\n";
             else
               out << table(_meta, data());
           } catch(const length_error &e) {
-            cerr << fetpf << "(corrupt table data)\n"
+            cerr << FETPF << "(corrupt table data)\n"
                     "  failure detected in: " << e.what() << '\n';
           } catch(const exception &e) {
-            cerr << fetpf << "(unknown error)\n"
+            cerr << FETPF << "(unknown error)\n"
                     "  failure detected in: " << e.what() << '\n';
           } catch(...) {
-            cerr << fetpf << "(unknown error - untraceable)\n";
+            cerr << FETPF << "(unknown error - untraceable)\n";
           }
+#undef FETPF
         }
       }
     };
