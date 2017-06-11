@@ -1,2 +1,6 @@
-                        gzstream
-C++ iostream classes wrapping the zlib compression library.
+
+                              gzstream
+      C++ iostream classes wrapping the zlib compression library.
+===========================================================================
+
+    See index.html for documentation and installation instructions.
