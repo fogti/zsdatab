@@ -152,7 +152,6 @@ namespace zsdatab {
     table(const metadata &_meta);
     table(const metadata &_meta, const buffer_t &n);
 
-    table(std::shared_ptr<table_interface> o);
     table(std::shared_ptr<table_interface> &&o);
     table(const table &o) = default;
     table(table &&o) = default;
@@ -172,6 +171,12 @@ namespace zsdatab {
 
   std::ostream& operator<<(std::ostream& stream, const table& tab);
   std::istream& operator>>(std::istream& stream, table& tab);
+
+  // for permanent tables, metadata and main data in one file
+  table make_packed_table(const std::string &_path);
+
+  // for permanent tables, gzipped and packed
+  table make_gzipped_table(const std::string &_path);
 
   namespace intern {
     // an internal checker for compatibility of tables
