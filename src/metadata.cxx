@@ -2,7 +2,7 @@
  *        class: zsdatab::metadata
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.0
+ *      version: 0.2.2
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -105,17 +105,14 @@ namespace zsdatab {
     }
   };
 
-  metadata::metadata():
-    _d(new metadata::impl()) { }
+  metadata::metadata()
+    : _d(new metadata::impl()) { }
 
-  metadata::metadata(const char sep):
-    metadata()
-  {
-    _d->sep = sep;
-  }
+  metadata::metadata(const char sep)
+    : metadata() { _d->sep = sep; }
 
-  metadata::metadata(const metadata &o):
-    _d(new metadata::impl(*o._d)) { }
+  metadata::metadata(const metadata &o)
+    : _d(new metadata::impl(*o._d)) { }
 
   metadata::metadata(metadata &&o) = default;
 

@@ -1,7 +1,7 @@
 /*************************************************
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.1
+ *      version: 0.2.2
  **************| ********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -173,9 +173,11 @@ namespace zsdatab {
   std::istream& operator>>(std::istream& stream, table& tab);
 
   // for permanent tables, metadata and main data in one file
+  bool create_packed_table(const std::string &_path, const metadata &_meta);
   table make_packed_table(const std::string &_path);
 
   // for permanent tables, gzipped and packed
+  bool create_gzipped_table(const std::string &_path, const metadata &_meta);
   table make_gzipped_table(const std::string &_path);
 
   namespace intern {

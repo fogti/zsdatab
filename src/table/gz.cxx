@@ -2,7 +2,7 @@
  *         part: extra table implementations (gzip tables)
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.1
+ *      version: 0.2.2
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -36,56 +36,18 @@
 #include <fstream>
 #include <iostream>
 
-#include "table/common.hpp"
+#include "table/packed.hpp"
 #include "3rdparty/gzstream/gzstream.h"
 
 namespace zsdatab {
   using namespace std;
+  using namespace GZSTREAM_NAMESPACE;
 
-  // concrete table implementations
-  namespace intern {
-    using namespace zsdatab_3rdparty;
-
-    class gzipped_table : public permanent_table_common {
-     public:
-      explicit gzipped_table(const string &name): permanent_table_common(name) {
-        igzstream in(_path.c_str());
-        if(!in) _valid = false;
-        else {
-          in >> _meta;
-          _valid = !_meta.empty();
-
-          table tmpt(_meta);
-          in >> tmpt;
-          data(tmpt.data());
-        }
-      }
-
-      ~gzipped_table() noexcept {
-        static const string fetpf = "libzsdatable.so: ERROR: zsdatab::gzipped_table::~gzipped_table() (write) failed ";
-
-        if(good() && _modified && !_path.empty()) {
-          try {
-            ogzstream out(_path.c_str());
-            if(!out)
-              cerr << fetpf << "(table open failed)\n";
-            else
-              out << _meta << table(_meta, data());
-          } catch(const length_error &e) {
-            cerr << fetpf << "(corrupt table data)\n"
-                    "  failure detected in: " << e.what() << '\n';
-          } catch(const exception &e) {
-            cerr << fetpf << "(unknown error)\n"
-                    "  failure detected in: " << e.what() << '\n';
-          } catch(...) {
-            cerr << fetpf << "(unknown error - untraceable)\n";
-          }
-        }
-      }
-    };
+  bool create_gzipped_table(const string &_path, const metadata &_meta) {
+    return intern::create_packed_table_common<ogzstream>(_path, _meta);
   }
 
-  table make_gzipped_table(const std::string &_path) {
-    return table(make_shared<intern::gzipped_table>(_path));
+  table make_gzipped_table(const string &_path) {
+    return intern::make_packed_table_common<igzstream, ogzstream>(_path);
   }
 }
