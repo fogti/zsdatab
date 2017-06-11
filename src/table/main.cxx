@@ -36,7 +36,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "zsdatable.hpp"
+#include "table/common.hpp"
 
 using namespace std;
 
@@ -45,16 +45,10 @@ namespace zsdatab {
 
   // concrete table implementations
   namespace intern {
-    class permanent_table : public table_interface {
-      bool _valid;
-      bool _modified;
-      metadata _meta;
-      buffer_t _data;
-      std::string _path;
-
+    class permanent_table : public permanent_table_common {
      public:
       explicit permanent_table(const string &name)
-        : _valid(false), _modified(false)
+        : permanent_table_common(name)
       {
         {
           ifstream in((name + ".meta").c_str());
@@ -64,28 +58,6 @@ namespace zsdatab {
           }
         }
         if(!_valid) return;
-
-        string host;
-        {
-          char tmp[65];
-          gethostname(tmp, 64);
-          tmp[64] = 0;
-          host = tmp;
-        }
-
-        _path = name + ".#" + host + '.' + to_string(getpid());
-
-        struct stat st;
-        while(
-                 !::link(name.c_str(), _path.c_str())
-              && (
-                     stat(name.c_str(), &st) == -1
-                  || st.st_nlink != 2
-                 )
-             ) {
-          ::unlink(_path.c_str());
-          sleep(1);
-        }
 
         {
           ifstream in(_path.c_str());
@@ -100,7 +72,7 @@ namespace zsdatab {
       }
 
       ~permanent_table() noexcept {
-        static const string fetpf = "libzsdatable.so: ERROR: zsdatab::table::~table() (write) failed ";
+        static const string fetpf = "libzsdatable.so: ERROR: zsdatab::intern::permanent_table::~permanent_table() (write) failed ";
 
         if(good() && _modified && !_path.empty()) {
           try {
@@ -119,34 +91,6 @@ namespace zsdatab {
             cerr << fetpf << "(unknown error - untraceable)\n";
           }
         }
-
-        if(!_path.empty())
-          ::unlink(_path.c_str());
-      }
-
-      bool good() const noexcept {
-        return _valid;
-      }
-
-      bool empty() const noexcept {
-        return _data.empty();
-      }
-
-      auto get_metadata() const noexcept -> const metadata& {
-        return _meta;
-      }
-
-      auto data() const noexcept -> const buffer_t& {
-        return _data;
-      }
-
-      void data(const buffer_t &n) {
-        _modified |= (_data != n);
-        _data = n;
-      }
-
-      auto clone() const -> std::shared_ptr<table_interface> {
-        throw table_clone_error("zsdatab::intern::permanent_table::clone");
       }
     };
 
@@ -200,9 +144,6 @@ namespace zsdatab {
   table::table(const metadata &meta, const buffer_t &n)
     : _t(new intern::in_memory_table(meta, n)) { }
 
-  table::table(shared_ptr<table_interface> o)
-    : _t(o) { }
-
   table::table(shared_ptr<table_interface> &&o)
     : _t(o) { }
 
@@ -228,8 +169,10 @@ namespace zsdatab {
 
   void table::data(const buffer_t &n) {
     // copy on write
-    if(!_t.unique()) _t = _t->clone();
-    _t->data(n);
+    if(n != data()) {
+      if(!_t.unique()) _t = _t->clone();
+      _t->data(n);
+    }
   }
 
   auto table::clone() const -> std::shared_ptr<table_interface> {

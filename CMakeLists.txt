@@ -9,12 +9,18 @@ set(INSTALL_CMAKE_DIR share/cmake/Modules CACHE PATH "Installation directory for
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_package(ZLIB REQUIRED)
+
 configure_file(FindZsdatable.cmake.in "${PROJECT_BINARY_DIR}/FindZsdatable.cmake")
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src" ${ZLIB_INCLUDE_DIRS})
 
-add_library(zsdatable SHARED src/context/common.cxx src/context/main.cxx src/context/operators.cxx src/context/wrappers.cxx src/join.cxx src/map.cxx src/metadata.cxx src/operators.cxx src/table.cxx src/transaction.cxx src/zsdatable.hpp)
-set_target_properties(zsdatable PROPERTIES VERSION "6.0.0" SOVERSION 6)
+add_library(zsdatable SHARED src/3rdparty/gzstream/gzstream.C
+                             src/context/common.cxx src/context/main.cxx src/context/operators.cxx src/context/wrappers.cxx
+                             src/table/common.cxx src/table/gz.cxx src/table/main.cxx src/table/packed.cxx
+                             src/join.cxx src/map.cxx src/metadata.cxx src/operators.cxx src/transaction.cxx src/zsdatable.hpp)
+set_target_properties(zsdatable PROPERTIES VERSION "7.0.1" SOVERSION 7)
+target_link_libraries(zsdatable ZLIB::ZLIB)
 
 add_executable(zsdatab-entry src/entry.cxx)
 target_link_libraries(zsdatab-entry zsdatable)
