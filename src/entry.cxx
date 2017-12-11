@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
         line.reserve(colcnt);
 
         for(size_t fieldn = 0; fieldn < colcnt; ++fieldn) {
-          line.push_back(commands[0]);
+          line.emplace_back(commands[0]);
           commands.pop_front();
         }
 
@@ -195,13 +195,14 @@ int main(int argc, char *argv[]) {
       } else if(cmd == "rm") {
         my_ctx.negate();
         my_ctx.push();
-      } else if(cmd == "rmexcept") {
+      } else if(cmd == "rmexcept")
         my_ctx.push();
-      } else if(cmd == "neg") {
+      else if(cmd == "neg")
         my_ctx.negate();
-      } else if(cmd == "push") {
+      else if(cmd == "push")
         my_ctx.push();
-      } else if(cmd == "quit") return 0;
+      else if(cmd == "quit")
+        return 0;
     }
   } catch(const out_of_range&e) {
     cerr << "zsdatab-entry: ERROR: command " << cmd << ": unknown fieldname '" << field << "'\n";

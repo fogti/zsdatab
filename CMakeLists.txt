@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.7)
 project(zsdatab LANGUAGES CXX)
 
 set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for binaries")
-set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
+set(INSTALL_LIB_DIR "lib${LIB_SUFFIX}" CACHE PATH "Installation directory for libraries")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
 set(INSTALL_CMAKE_DIR share/cmake/Modules CACHE PATH "Installation directory for CMake module files")
 
@@ -14,8 +14,6 @@ find_package(ZLIB REQUIRED)
 configure_file(FindZsdatable.cmake.in "${PROJECT_BINARY_DIR}/FindZsdatable.cmake")
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty/gzstream" ${ZLIB_INCLUDE_DIRS})
-
-add_definitions(-DGZSTREAM_NAMESPACE=zsdatab_3rdparty)
 
 add_library(zsdatable SHARED src/3rdparty/gzstream/gzstream.C
                              src/context/common.cxx src/context/main.cxx src/context/operators.cxx src/context/wrappers.cxx

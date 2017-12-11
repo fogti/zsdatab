@@ -34,6 +34,7 @@
 #include <fstream>
 #include <zlib.h>
 
+#define GZSTREAM_NAMESPACE zsdatab_3rdparty
 #ifdef GZSTREAM_NAMESPACE
 namespace GZSTREAM_NAMESPACE {
 #endif

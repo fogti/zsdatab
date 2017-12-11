@@ -2,7 +2,7 @@
  *         part: table joining
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.0
+ *      version: 0.2.4
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2016 Erik Kai Alain Zscheile
+ * Copyright (c) 2017 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -30,13 +30,11 @@
  *
  *************************************************/
 
-#include <iterator>
-#include <map>
-#include <set>
+#include <unordered_map>
 #include "zsdatable.hpp"
 
 namespace zsdatab {
-  namespace intern {
+  table inner_join(char sep, const buffer_interface &a, const buffer_interface &b) {
     struct column_join {
       size_t a, b, c;
     };
@@ -44,17 +42,15 @@ namespace zsdatab {
     enum column_join_from_where {
       FROM_COMMON, FROM_A, FROM_B
     };
-  }
 
-  table inner_join(char sep, const buffer_interface &a, const buffer_interface &b) {
     const metadata &ma = a.get_metadata();
     const metadata &mb = b.get_metadata();
     metadata mt(sep);
 
     using namespace std;
     // compute column names
-    map<string, intern::column_join> merge_cols;
-    map<string, intern::column_join_from_where> join_cols;
+    unordered_map<string, column_join> merge_cols;
+    unordered_map<string, column_join_from_where> join_cols;
     {
       vector<string> cols = ma.get_cols();
       for(auto &&i : mb.get_cols()) {
@@ -66,7 +62,7 @@ namespace zsdatab {
       mt += cols;
 
       for(auto &&i : cols) {
-#define CJFWV(V) join_cols[i] = intern::column_join_from_where::FROM_##V
+#define CJFWV(V) join_cols[i] = column_join_from_where::FROM_##V
         CJFWV(COMMON);
         if(merge_cols.find(i) == merge_cols.end()) {
           if(ma.has_field(i))      CJFWV(A);
@@ -77,9 +73,11 @@ namespace zsdatab {
     }
 
     for(auto &i : merge_cols) {
-      i.second.a = ma.get_field_nr(i.first);
-      i.second.b = mb.get_field_nr(i.first);
-      i.second.c = mt.get_field_nr(i.first);
+      auto &fi = i.first;
+      auto &se = i.second;
+      se.a = ma.get_field_nr(fi);
+      se.b = mb.get_field_nr(fi);
+      se.c = mt.get_field_nr(fi);
     }
 
     // compute table
@@ -87,8 +85,8 @@ namespace zsdatab {
 
     for(auto &&x : a.data()) {
       for(auto &&y : b.data()) {
-        bool match = true;
         vector<string> line(mt.get_field_count());
+        bool match = true;
         for(auto &&col : merge_cols) {
           const string value = x[col.second.a];
           if(value == y[col.second.b]) {
@@ -100,24 +98,24 @@ namespace zsdatab {
             break;
           }
         }
-        if(match) {
-          for(size_t i = 0; i < line.size(); ++i) {
-            if(!line[i].empty()) continue;
+        if(!match) continue;
 
-            const string colname = mt.get_field_name(i);
-            switch(join_cols[colname]) {
-              case intern::column_join_from_where::FROM_A:
-                line[i] = x[ma.get_field_nr(colname)];
-                break;
-              case intern::column_join_from_where::FROM_B:
-                line[i] = y[mb.get_field_nr(colname)];
-                break;
+        for(size_t i = 0; i < line.size(); ++i) {
+          if(!line[i].empty()) continue;
 
-              default: break;
-            }
+          const string colname = mt.get_field_name(i);
+          switch(join_cols[colname]) {
+            case column_join_from_where::FROM_A:
+              line[i] = x[ma.get_field_nr(colname)];
+              break;
+            case column_join_from_where::FROM_B:
+              line[i] = y[mb.get_field_nr(colname)];
+              break;
+
+            default: break;
           }
-          table_data.push_back(line);
         }
+        table_data.push_back(line);
       }
     }
 
