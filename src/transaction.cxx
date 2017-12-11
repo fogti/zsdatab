@@ -2,7 +2,7 @@
  *        class: zsdatab::transaction
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.1.6
+ *      version: 0.2.5
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2016 Erik Kai Alain Zscheile
+ * Copyright (c) 2017 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -38,6 +38,7 @@ namespace zsdatab {
   namespace intern {
     namespace ta {
       enum action_name {
+        NONE,
         APPEND,
         CLEAR,
         SORT,
@@ -175,6 +176,8 @@ namespace zsdatab {
         string from, to;
         size_t field;
       };
+
+      typedef vector<shared_ptr<action>> actions_t;
     }
   }
 
@@ -216,8 +219,13 @@ namespace zsdatab {
 
   using intern::ta::action_name;
 
+  static action_name ta__get_lasta(const intern::ta::actions_t &actions) {
+    if(actions.empty()) return action_name::NONE;
+    return actions.back()->get_name();
+  }
+
   transaction& transaction::sort() {
-    switch(_actions.back()->get_name()) {
+    switch(ta__get_lasta(_actions)) {
       case action_name::CLEAR:
       case action_name::SORT:
       case action_name::UNIQ:
@@ -230,7 +238,7 @@ namespace zsdatab {
   }
 
   transaction& transaction::uniq() {
-    switch(_actions.back()->get_name()) {
+    switch(ta__get_lasta(_actions)) {
       case action_name::CLEAR:
         break;
 
@@ -247,7 +255,7 @@ namespace zsdatab {
   }
 
   transaction& transaction::negate() {
-    switch(_actions.back()->get_name()) {
+    switch(ta__get_lasta(_actions)) {
       case action_name::NEGATE:
         _actions.pop_back();
         break;
@@ -273,7 +281,7 @@ namespace zsdatab {
       throw;
     }
 
-    switch(_actions.back()->get_name()) {
+    switch(ta__get_lasta(_actions)) {
       case action_name::CLEAR:
         break;
 
@@ -297,7 +305,7 @@ namespace zsdatab {
   }
 
   transaction& transaction::set_field(const string& field, const string& value) {
-    if(_actions.back()->get_name() == action_name::CLEAR) return *this;
+    if(ta__get_lasta(_actions) == action_name::CLEAR) return *this;
     const size_t fnr = _meta.get_field_nr(field);
     intern::ta::set_field* p = new intern::ta::set_field;
     p->field = fnr;
@@ -308,7 +316,7 @@ namespace zsdatab {
       throw;
     }
 
-    if(_actions.back()->get_name() == action_name::SET_FIELD) {
+    if(ta__get_lasta(_actions) == action_name::SET_FIELD) {
       const intern::ta::set_field *old = dynamic_cast<intern::ta::set_field *>(_actions.back().get());
       if(old) {
         if(old->field != fnr) {
@@ -323,7 +331,7 @@ namespace zsdatab {
   }
 
   transaction& transaction::append_part(const string& field, const string& value) {
-    if(_actions.back()->get_name() == action_name::CLEAR) return *this;
+    if(ta__get_lasta(_actions) == action_name::CLEAR) return *this;
     const size_t fnr = _meta.get_field_nr(field);
     intern::ta::append_part* p = new intern::ta::append_part;
     p->field = fnr;
@@ -334,7 +342,7 @@ namespace zsdatab {
       throw;
     }
 
-    if(_actions.back()->get_name() == action_name::APPEND_PART) {
+    if(ta__get_lasta(_actions) == action_name::APPEND_PART) {
       const intern::ta::append_part *old = dynamic_cast<intern::ta::append_part *>(_actions.back().get());
       if(old) {
         if(old->field != fnr) {
@@ -350,7 +358,7 @@ namespace zsdatab {
   }
 
   transaction& transaction::remove_part(const string& field, const string& value) {
-    if(_actions.back()->get_name() == action_name::CLEAR) return *this;
+    if(ta__get_lasta(_actions) == action_name::CLEAR) return *this;
     const size_t fnr = _meta.get_field_nr(field);
     intern::ta::append_part* p = new intern::ta::append_part;
     p->field = fnr;
@@ -361,7 +369,7 @@ namespace zsdatab {
       throw;
     }
 
-    switch(_actions.back()->get_name()) {
+    switch(ta__get_lasta(_actions)) {
       case action_name::APPEND_PART:
         {
           const intern::ta::append_part *old = dynamic_cast<intern::ta::append_part *>(_actions.back().get());
@@ -386,7 +394,7 @@ namespace zsdatab {
   }
 
   transaction& transaction::replace_part(const string& field, const string& from, const string& to) {
-    if(_actions.back()->get_name() == action_name::CLEAR) return *this;
+    if(ta__get_lasta(_actions) == action_name::CLEAR) return *this;
     const size_t fnr = _meta.get_field_nr(field);
     intern::ta::replace_part* p = new intern::ta::replace_part;
     p->field = fnr;
