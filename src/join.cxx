@@ -2,7 +2,7 @@
  *         part: table joining
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.4
+ *      version: 0.2.6
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -101,15 +101,16 @@ namespace zsdatab {
         if(!match) continue;
 
         for(size_t i = 0; i < line.size(); ++i) {
-          if(!line[i].empty()) continue;
+          auto &l = line[i];
+          if(!l.empty()) continue;
 
-          const string colname = mt.get_field_name(i);
+          const auto colname = mt.get_field_name(i);
           switch(join_cols[colname]) {
             case column_join_from_where::FROM_A:
-              line[i] = x[ma.get_field_nr(colname)];
+              l = x[ma.get_field_nr(colname)];
               break;
             case column_join_from_where::FROM_B:
-              line[i] = y[mb.get_field_nr(colname)];
+              l = y[mb.get_field_nr(colname)];
               break;
 
             default: break;
