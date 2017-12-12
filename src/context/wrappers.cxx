@@ -68,6 +68,16 @@ namespace zsdatab {
     }
 
     // report
+    vector<string> context_common::get_column_data(const string &colname, const bool _uniq) const {
+      size_t fieldn;
+      try {
+        fieldn = get_field_nr(colname);
+      } catch(...) {
+        return {};
+      }
+      return get_column_data(fieldn, _uniq);
+    }
+
     auto context_common::get_metadata() const noexcept -> const metadata& {
       return get_const_table().get_metadata();
     }

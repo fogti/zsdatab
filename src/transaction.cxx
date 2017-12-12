@@ -146,8 +146,8 @@ namespace zsdatab {
 
   transaction& transaction::clear() {
     _actions.clear();
-    _actions.shrink_to_fit();
     _actions.emplace_back(new intern::ta::clear);
+    _actions.shrink_to_fit();
     return *this;
   }
 
@@ -207,11 +207,11 @@ namespace zsdatab {
     try {
       p->field = _meta.get_field_nr(field);
       p->value = value;
-      p->whole = whole;
     } catch(...) {
       delete p;
       throw;
     }
+    p->whole = whole;
 
     switch(ta__get_lasta(_actions)) {
       case action_name::CLEAR:
@@ -219,14 +219,12 @@ namespace zsdatab {
         break;
 
       case action_name::SORT:
-        _actions.pop_back();
-        _actions.emplace_back(p);
+        _actions.back() = shared_ptr<intern::ta::action>(p);
         sort();
         break;
 
       case action_name::UNIQ:
-        _actions.pop_back();
-        _actions.emplace_back(p);
+        _actions.back() = shared_ptr<intern::ta::action>(p);
         uniq();
         break;
 
@@ -272,13 +270,9 @@ namespace zsdatab {
 
     if(ta__get_lasta(_actions) == action_name::APPEND_PART) {
       const auto old = dynamic_cast<const intern::ta::append_part *>(_actions.back().get());
-      if(old) {
-        if(old->field != fnr) {
-          // do nothing
-        } else if(old->value != value) {
-          p->value = old->value + value;
-          _actions.pop_back();
-        }
+      if(old && old->field == fnr && old->value != value) {
+        p->value = old->value + value;
+        _actions.pop_back();
       }
     }
     _actions.emplace_back(p);

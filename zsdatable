@@ -35,7 +35,7 @@ if [[ -z $1 || -z $2 ]]; then
   cat <<EOF
 USAGE: zsdatable TABLE CMD ARGS...
 
-Commands:"
+Commands:
   mk  SEPERATOR COLUMNS...  make table
   mmk METAFILE              make table from metafile
   rm                        delete table
