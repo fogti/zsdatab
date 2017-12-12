@@ -110,10 +110,10 @@ zsdatab::metadata md(':');
 md += { "a", "b", "c" };
 
 // create packed table
-create_packed_table("mood_packed", md);
+zsdatab::create_packed_table("mood_packed", md);
 
 // get a reference to the table
-zsdatab::table tab = make_packed_table("mood_packed");
+zsdatab::table tab = zsdatab::make_packed_table("mood_packed");
 
 // work with the table
 ```
