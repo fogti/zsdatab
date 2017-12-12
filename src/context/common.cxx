@@ -30,6 +30,7 @@
  *
  *************************************************/
 
+#include <algorithm>
 #include <stdexcept>
 #include "zsdatable.hpp"
 

@@ -30,6 +30,7 @@
  *
  *************************************************/
 
+#include <algorithm>
 #include "zsdatable.hpp"
 
 zsdatab::table zsdatab::inner_join(char sep, const buffer_interface &a, const buffer_interface &b) {
