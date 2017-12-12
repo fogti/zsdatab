@@ -33,93 +33,90 @@
 #include <unordered_map>
 #include "zsdatable.hpp"
 
-namespace zsdatab {
-  table inner_join(char sep, const buffer_interface &a, const buffer_interface &b) {
-    struct column_join {
-      size_t a, b, c;
-    };
+zsdatab::table zsdatab::inner_join(char sep, const buffer_interface &a, const buffer_interface &b) {
+  struct column_join {
+    size_t a, b, c;
+  };
 
-    enum column_join_from_where {
-      FROM_COMMON, FROM_A, FROM_B
-    };
+  enum column_join_from_where {
+    FROM_COMMON, FROM_A, FROM_B
+  };
 
-    const metadata &ma = a.get_metadata();
-    const metadata &mb = b.get_metadata();
-    metadata mt(sep);
+  const metadata &ma = a.get_metadata();
+  const metadata &mb = b.get_metadata();
+  metadata mt(sep);
 
-    using namespace std;
-    // compute column names
-    unordered_map<string, column_join> merge_cols;
-    unordered_map<string, column_join_from_where> join_cols;
-    {
-      vector<string> cols = ma.get_cols();
-      for(auto &&i : mb.get_cols()) {
-        if(find(cols.begin(), cols.end(), i) != cols.end())
-          merge_cols[i] = { 0, 0, 0 };
-        else
-          cols.push_back(i);
-      }
-      mt += cols;
-
-      for(auto &&i : cols) {
-#define CJFWV(V) join_cols[i] = column_join_from_where::FROM_##V
-        CJFWV(COMMON);
-        if(merge_cols.find(i) == merge_cols.end()) {
-          if(ma.has_field(i))      CJFWV(A);
-          else if(mb.has_field(i)) CJFWV(B);
-        }
-#undef CJFWV
-      }
+  using namespace std;
+  // compute column names
+  unordered_map<string, column_join> merge_cols;
+  unordered_map<string, column_join_from_where> join_cols;
+  {
+    vector<string> cols = ma.get_cols();
+    for(auto &&i : mb.get_cols()) {
+      if(find(cols.begin(), cols.end(), i) != cols.end())
+        merge_cols[i] = { 0, 0, 0 };
+      else
+        cols.push_back(i);
     }
+    mt += cols;
 
-    for(auto &i : merge_cols) {
-      auto &fi = i.first;
-      auto &se = i.second;
-      se.a = ma.get_field_nr(fi);
-      se.b = mb.get_field_nr(fi);
-      se.c = mt.get_field_nr(fi);
+    for(auto &&i : cols) {
+#define CJFW(V) column_join_from_where::FROM_##V
+      join_cols[i] = (
+        (merge_cols.find(i) != merge_cols.end())
+        ? CJFW(COMMON)
+        : (ma.has_field(i) ? CJFW(A) : CJFW(B))
+      );
+#undef CJFW
     }
-
-    // compute table
-    vector<vector<string>> table_data;
-
-    for(auto &&x : a.data()) {
-      for(auto &&y : b.data()) {
-        vector<string> line(mt.get_field_count());
-        bool match = true;
-        for(auto &&col : merge_cols) {
-          const string value = x[col.second.a];
-          if(value == y[col.second.b]) {
-            // match
-            line[col.second.c] = value;
-          } else {
-            // no match
-            match = false;
-            break;
-          }
-        }
-        if(!match) continue;
-
-        for(size_t i = 0; i < line.size(); ++i) {
-          auto &l = line[i];
-          if(!l.empty()) continue;
-
-          const auto colname = mt.get_field_name(i);
-          switch(join_cols[colname]) {
-            case column_join_from_where::FROM_A:
-              l = x[ma.get_field_nr(colname)];
-              break;
-            case column_join_from_where::FROM_B:
-              l = y[mb.get_field_nr(colname)];
-              break;
-
-            default: break;
-          }
-        }
-        table_data.push_back(line);
-      }
-    }
-
-    return table(mt, table_data);
   }
+
+  for(auto &i : merge_cols) {
+    auto &fi = i.first;
+    auto &se = i.second;
+    se.a = ma.get_field_nr(fi);
+    se.b = mb.get_field_nr(fi);
+    se.c = mt.get_field_nr(fi);
+  }
+
+  // compute table
+  vector<vector<string>> table_data;
+
+  for(auto &&x : a.data()) {
+    for(auto &&y : b.data()) {
+      vector<string> line(mt.get_field_count());
+      bool match = true;
+      for(auto &&col : merge_cols) {
+        const string value = x[col.second.a];
+        if(value == y[col.second.b]) {
+          line[col.second.c] = value;
+        } else {
+          match = false;
+          break;
+        }
+      }
+      if(!match) continue;
+
+      for(size_t i = 0; i < line.size(); ++i) {
+        auto &l = line[i];
+        if(!l.empty()) continue;
+
+        const auto colname = mt.get_field_name(i);
+        switch(join_cols[colname]) {
+          case column_join_from_where::FROM_A:
+            l = x[ma.get_field_nr(colname)];
+            break;
+
+          case column_join_from_where::FROM_B:
+            l = y[mb.get_field_nr(colname)];
+            break;
+
+          default: break;
+        }
+      }
+      table_data.push_back(line);
+    }
+  }
+
+  return table(mt, table_data);
 }

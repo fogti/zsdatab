@@ -174,8 +174,6 @@ namespace zsdatab {
   transaction& transaction::uniq() {
     switch(ta__get_lasta(_actions)) {
       case action_name::CLEAR:
-        break;
-
       case action_name::UNIQ:
         break;
 
@@ -217,6 +215,7 @@ namespace zsdatab {
 
     switch(ta__get_lasta(_actions)) {
       case action_name::CLEAR:
+        delete p;
         break;
 
       case action_name::SORT:
