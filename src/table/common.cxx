@@ -43,7 +43,7 @@ namespace zsdatab {
     permanent_table_common::permanent_table_common()
       : _valid(false), _modified(false) { }
 
-    permanent_table_common::permanent_table_common(const string& name)
+    permanent_table_common::permanent_table_common(const string &name)
       : permanent_table_common()
     {
       string host;
@@ -96,7 +96,7 @@ namespace zsdatab {
     }
 
     auto permanent_table_common::clone() const -> std::shared_ptr<table_interface> {
-      throw table_clone_error("zsdatab::intern::permanent_table_common::clone");
+      throw table_clone_error(__PRETTY_FUNCTION__);
     }
   }
 }

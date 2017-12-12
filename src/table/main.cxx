@@ -41,8 +41,6 @@
 using namespace std;
 
 namespace zsdatab {
-  table_clone_error::table_clone_error(const char *w): runtime_error(w) { }
-
   // concrete table implementations
   namespace intern {
     class permanent_table : public permanent_table_common {

@@ -50,8 +50,7 @@ namespace zsdatab {
       auto clone() const -> std::shared_ptr<table_interface>;
 
      protected:
-      bool _valid;
-      bool _modified;
+      bool _valid, _modified;
       metadata _meta;
       buffer_t _data;
       std::string _path;

@@ -40,11 +40,11 @@ namespace zsdatab {
     return !(a == b);
   }
 
-  ostream& operator<<(ostream& stream, const table& tab) {
+  ostream& operator<<(ostream &stream, const table &tab) {
     return (stream << const_context(tab));
   }
 
-  istream& operator>>(istream& stream, table& tab) {
+  istream& operator>>(istream &stream, table &tab) {
     context ctx(tab);
     stream >> ctx;
     ctx.push();

@@ -1,7 +1,7 @@
 /*************************************************
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.4
+ *      version: 0.2.6
  **************| ********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -53,6 +53,11 @@ namespace zsdatab {
     // type for "pointers to implementation"
     template<class T>
     using pimpl = std::experimental::propagate_const<std::unique_ptr<T>>;
+
+    namespace ta {
+      // base class for transaction parts
+      struct action;
+    }
   }
 
   // metadata class
@@ -60,18 +65,18 @@ namespace zsdatab {
     struct impl;
     intern::pimpl<impl> _d;
 
-    friend auto operator<<(std::ostream& stream, const metadata::impl& meta) -> std::ostream&;
-    friend auto operator>>(std::istream& stream, metadata::impl& meta) -> std::istream&;
+    friend auto operator<<(std::ostream &stream, const metadata::impl &meta) -> std::ostream&;
+    friend auto operator>>(std::istream &stream, metadata::impl &meta) -> std::istream&;
 
     friend bool operator==(const metadata &a, const metadata &b);
-    friend auto operator<<(std::ostream& stream, const metadata& meta) -> std::ostream&;
-    friend auto operator>>(std::istream& stream, metadata& meta) -> std::istream&;
+    friend auto operator<<(std::ostream &stream, const metadata &meta) -> std::ostream&;
+    friend auto operator>>(std::istream &stream, metadata &meta) -> std::istream&;
 
    public:
     metadata();
     metadata(const char sep);
     metadata(const metadata &o);
-    metadata(metadata &&o);
+    metadata(metadata &&o) = default;
 
     ~metadata() noexcept;
 
@@ -101,8 +106,8 @@ namespace zsdatab {
   bool operator==(const metadata &a, const metadata &b);
   bool operator!=(const metadata &a, const metadata &b);
 
-  std::ostream& operator<<(std::ostream& stream, const metadata& meta);
-  std::istream& operator>>(std::istream& stream, metadata& meta);
+  std::ostream& operator<<(std::ostream &stream, const metadata &meta);
+  std::istream& operator>>(std::istream &stream, metadata &meta);
 
   class table;
 
@@ -119,9 +124,8 @@ namespace zsdatab {
     virtual auto data() const noexcept -> const buffer_t& = 0;
   };
 
-  class table_clone_error : public std::runtime_error {
-   public:
-    table_clone_error(const char *w);
+  struct table_clone_error : public std::runtime_error {
+    using runtime_error::runtime_error;
   };
 
   // table_interface class:
@@ -286,10 +290,10 @@ namespace zsdatab {
 
   class const_context final : public intern::context_base<const table> {
    public:
-    explicit const_context(const table& tab);
+    explicit const_context(const table &tab);
     const_context(const buffer_interface &o);
 
-    const_context(const table&& tab) = delete;
+    const_context(const table &&tab) = delete;
     const_context(const buffer_interface &&o) = delete;
     const_context(const const_context &o) = default;
     const_context(const_context &&o) noexcept = default;
@@ -312,17 +316,11 @@ namespace zsdatab {
     // rmexcept = push
   };
 
-  namespace intern {
-    namespace ta {
-      struct action;
-    }
-  }
-
   class transaction final {
    public:
     transaction(const metadata &m);
     transaction(const transaction &o);
-    transaction(transaction&& o) = default;
+    transaction(transaction &&o) = default;
 
     void apply(intern::context_common &ctx) const;
 

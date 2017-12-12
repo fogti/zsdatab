@@ -2,7 +2,7 @@
  *        class: zsdatab::metadata
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.2
+ *      version: 0.2.6
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -36,7 +36,7 @@
 
 using namespace std;
 
-static auto deserialize_line(const string &line, char my_sep) -> vector<string> {
+static auto deserialize_line(const string &line, const char my_sep) -> vector<string> {
   vector<string> ret;
   string col;
   istringstream ss(line);
@@ -64,7 +64,7 @@ static auto deserialize_line(const string &line, char my_sep) -> vector<string> 
   return ret;
 }
 
-static auto serialize_line(const vector<string> &cols, char my_sep) -> string {
+static auto serialize_line(const vector<string> &cols, const char my_sep) -> string {
   string ret;
   bool fi = true;
 
@@ -97,7 +97,6 @@ namespace zsdatab {
     char sep;
 
     impl(): sep(' ') { }
-    ~impl() noexcept = default;
 
     void swap(impl &o) noexcept {
       std::swap(this->cols, o.cols);
@@ -113,8 +112,6 @@ namespace zsdatab {
 
   metadata::metadata(const metadata &o)
     : _d(new metadata::impl(*o._d)) { }
-
-  metadata::metadata(metadata &&o) = default;
 
   metadata::~metadata() noexcept = default;
 
@@ -194,21 +191,20 @@ namespace zsdatab {
   }
 
   bool operator==(const metadata &a, const metadata &b) {
-    return (a._d->cols.size() == b._d->cols.size());
+    return a.get_cols().size() == b.get_cols().size();
   }
 
-  auto operator<<(ostream& stream, const metadata::impl& meta) -> ostream& {
+  auto operator<<(ostream &stream, const metadata::impl &meta) -> ostream& {
     stream << meta.sep << serialize_line(meta.cols, meta.sep) << '\n';
     return stream;
   }
 
-  auto operator>>(istream& stream, metadata::impl& meta) -> istream& {
-    string tmp;
-
+  auto operator>>(istream &stream, metadata::impl &meta) -> istream& {
     stream.get(meta.sep);
     const bool old_layout = (stream.get() == '\n');
     if(!stream) return stream;
 
+    string tmp;
     if(!old_layout) stream.unget();
     getline(stream, tmp);
 
@@ -216,13 +212,11 @@ namespace zsdatab {
     return stream;
   }
 
-  auto operator<<(ostream& stream, const metadata& meta) -> ostream& {
-    stream << *meta._d;
-    return stream;
+  auto operator<<(ostream &stream, const metadata &meta) -> ostream& {
+    return (stream << *meta._d);
   }
 
-  auto operator>>(istream& stream, metadata& meta) -> istream& {
-    stream >> *meta._d;
-    return stream;
+  auto operator>>(istream &stream, metadata &meta) -> istream& {
+    return (stream >> *meta._d);
   }
 }

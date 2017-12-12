@@ -2,7 +2,7 @@
  *        class: zsdatab::transaction
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.5
+ *      version: 0.2.6
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -38,16 +38,10 @@ namespace zsdatab {
   namespace intern {
     namespace ta {
       enum action_name {
-        NONE,
-        APPEND,
-        CLEAR,
-        SORT,
-        UNIQ,
-        NEGATE,
-        FILTER,
-        SET_FIELD,
-        APPEND_PART,
-        REMOVE_PART,
+        NONE,        APPEND,
+        CLEAR, SORT, UNIQ, NEGATE,
+        FILTER,      SET_FIELD,
+        APPEND_PART, REMOVE_PART,
         REPLACE_PART
       };
 
@@ -57,121 +51,61 @@ namespace zsdatab {
         virtual action_name get_name() const noexcept = 0;
       };
 
+      struct akv : action {
+        string value;
+        size_t field;
+      };
+
       struct append final : action {
-        virtual ~append() = default;
-        void apply(context_common &ctx) const {
-          ctx += line;
-        }
-
-        action_name get_name() const noexcept {
-          return action_name::APPEND;
-        }
-
+        void apply(context_common &ctx) const { ctx += line;                       }
+        action_name get_name() const noexcept { return action_name::APPEND;        }
         vector<string> line;
       };
 
       struct clear final : action {
-        virtual ~clear() = default;
-        void apply(context_common &ctx) const {
-          ctx.clear();
-        }
-
-        action_name get_name() const noexcept {
-          return action_name::CLEAR;
-        }
+        void apply(context_common &ctx) const { ctx.clear();                       }
+        action_name get_name() const noexcept { return action_name::CLEAR;         }
       };
 
       struct sort final : action {
-        virtual ~sort() = default;
-        void apply(context_common &ctx) const {
-          ctx.sort();
-        }
-        action_name get_name() const noexcept {
-          return action_name::SORT;
-        }
+        void apply(context_common &ctx) const { ctx.sort();                        }
+        action_name get_name() const noexcept { return action_name::SORT;          }
       };
 
       struct uniq final : action {
-        virtual ~uniq() = default;
-        void apply(context_common &ctx) const {
-          ctx.uniq();
-        }
-        action_name get_name() const noexcept {
-          return action_name::UNIQ;
-        }
+        void apply(context_common &ctx) const { ctx.uniq();                        }
+        action_name get_name() const noexcept { return action_name::UNIQ;          }
       };
 
       struct negate final : action {
-        virtual ~negate() = default;
-        void apply(context_common &ctx) const {
-          ctx.negate();
-        }
-        action_name get_name() const noexcept {
-          return action_name::NEGATE;
-        }
+        void apply(context_common &ctx) const { ctx.negate();                      }
+        action_name get_name() const noexcept { return action_name::NEGATE;        }
       };
 
-      struct filter final : action {
-        virtual ~filter() = default;
-        void apply(context_common &ctx) const {
-          ctx.filter(field, value, whole);
-        }
-        action_name get_name() const noexcept {
-          return action_name::FILTER;
-        }
-
-        string value;
-        size_t field;
+      struct filter final : akv {
+        void apply(context_common &ctx) const { ctx.filter(field, value, whole);   }
+        action_name get_name() const noexcept { return action_name::FILTER;        }
         bool whole;
       };
 
-      struct set_field final : action {
-        virtual ~set_field() = default;
-        void apply(context_common &ctx) const {
-          ctx.set_field(field, value);
-        }
-        action_name get_name() const noexcept {
-          return action_name::SET_FIELD;
-        }
-
-        string value;
-        size_t field;
+      struct set_field final : akv {
+        void apply(context_common &ctx) const { ctx.set_field(field, value);       }
+        action_name get_name() const noexcept { return action_name::SET_FIELD;     }
       };
 
-      struct append_part final : action {
-        virtual ~append_part() = default;
-        void apply(context_common &ctx) const {
-          ctx.append_part(field, value);
-        }
-        action_name get_name() const noexcept {
-          return action_name::APPEND_PART;
-        }
-
-        string value;
-        size_t field;
+      struct append_part final : akv {
+        void apply(context_common &ctx) const { ctx.append_part(field, value);     }
+        action_name get_name() const noexcept { return action_name::APPEND_PART;   }
       };
 
-      struct remove_part final : action {
-        virtual ~remove_part() = default;
-        void apply(context_common &ctx) const {
-          ctx.remove_part(field, value);
-        }
-        action_name get_name() const noexcept {
-          return action_name::REMOVE_PART;
-        }
-
-        string value;
-        size_t field;
+      struct remove_part final : akv {
+        void apply(context_common &ctx) const { ctx.remove_part(field, value);     }
+        action_name get_name() const noexcept { return action_name::REMOVE_PART;   }
       };
 
       struct replace_part final : action {
-        virtual ~replace_part() = default;
-        void apply(context_common &ctx) const {
-          ctx.replace_part(field, from, to);
-        }
-        action_name get_name() const noexcept {
-          return action_name::REPLACE_PART;
-        }
+        void apply(context_common &ctx) const { ctx.replace_part(field, from, to); }
+        action_name get_name() const noexcept { return action_name::REPLACE_PART;  }
 
         string from, to;
         size_t field;
@@ -198,7 +132,7 @@ namespace zsdatab {
     if(line.size() != _meta.get_field_count())
       throw length_error(__PRETTY_FUNCTION__);
 
-    intern::ta::append *p = new intern::ta::append;
+    auto p = new intern::ta::append;
 
     try {
       p->line = line;
@@ -271,7 +205,7 @@ namespace zsdatab {
   }
 
   transaction& transaction::filter(const string& field, const string& value, const bool whole) {
-    intern::ta::filter* p = new intern::ta::filter;
+    auto p = new intern::ta::filter;
     try {
       p->field = _meta.get_field_nr(field);
       p->value = value;
@@ -307,7 +241,7 @@ namespace zsdatab {
   transaction& transaction::set_field(const string& field, const string& value) {
     if(ta__get_lasta(_actions) == action_name::CLEAR) return *this;
     const size_t fnr = _meta.get_field_nr(field);
-    intern::ta::set_field* p = new intern::ta::set_field;
+    auto p = new intern::ta::set_field;
     p->field = fnr;
     try {
       p->value = value;
@@ -317,14 +251,9 @@ namespace zsdatab {
     }
 
     if(ta__get_lasta(_actions) == action_name::SET_FIELD) {
-      const intern::ta::set_field *old = dynamic_cast<intern::ta::set_field *>(_actions.back().get());
-      if(old) {
-        if(old->field != fnr) {
-          // do nothing
-        } else if(old->value != value) {
-          _actions.pop_back();
-        }
-      }
+      const auto old = dynamic_cast<const intern::ta::set_field *>(_actions.back().get());
+      if(old && old->field == fnr)
+        _actions.pop_back();
     }
     _actions.emplace_back(p);
     return *this;
@@ -333,7 +262,7 @@ namespace zsdatab {
   transaction& transaction::append_part(const string& field, const string& value) {
     if(ta__get_lasta(_actions) == action_name::CLEAR) return *this;
     const size_t fnr = _meta.get_field_nr(field);
-    intern::ta::append_part* p = new intern::ta::append_part;
+    auto p = new intern::ta::append_part;
     p->field = fnr;
     try {
       p->value = value;
@@ -343,7 +272,7 @@ namespace zsdatab {
     }
 
     if(ta__get_lasta(_actions) == action_name::APPEND_PART) {
-      const intern::ta::append_part *old = dynamic_cast<intern::ta::append_part *>(_actions.back().get());
+      const auto old = dynamic_cast<const intern::ta::append_part *>(_actions.back().get());
       if(old) {
         if(old->field != fnr) {
           // do nothing
@@ -360,7 +289,7 @@ namespace zsdatab {
   transaction& transaction::remove_part(const string& field, const string& value) {
     if(ta__get_lasta(_actions) == action_name::CLEAR) return *this;
     const size_t fnr = _meta.get_field_nr(field);
-    intern::ta::append_part* p = new intern::ta::append_part;
+    auto p = new intern::ta::append_part;
     p->field = fnr;
     try {
       p->value = value;
@@ -372,7 +301,7 @@ namespace zsdatab {
     switch(ta__get_lasta(_actions)) {
       case action_name::APPEND_PART:
         {
-          const intern::ta::append_part *old = dynamic_cast<intern::ta::append_part *>(_actions.back().get());
+          const auto old = dynamic_cast<const intern::ta::append_part *>(_actions.back().get());
           if(old && old->field == fnr && old->value == value)
             _actions.pop_back();
         }
@@ -380,7 +309,7 @@ namespace zsdatab {
 
       case action_name::REMOVE_PART:
         {
-          const intern::ta::remove_part *old = dynamic_cast<intern::ta::remove_part *>(_actions.back().get());
+          const auto old = dynamic_cast<const intern::ta::remove_part *>(_actions.back().get());
           if(old && old->field == fnr && old->value == value)
             _actions.pop_back();
         }
@@ -396,7 +325,7 @@ namespace zsdatab {
   transaction& transaction::replace_part(const string& field, const string& from, const string& to) {
     if(ta__get_lasta(_actions) == action_name::CLEAR) return *this;
     const size_t fnr = _meta.get_field_nr(field);
-    intern::ta::replace_part* p = new intern::ta::replace_part;
+    auto p = new intern::ta::replace_part;
     p->field = fnr;
 
     try {

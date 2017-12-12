@@ -1,7 +1,7 @@
 /*************************************************
  *      program: zsdatab-entry
  *      package: zsdatab
- *      version: 0.2.0
+ *      version: 0.2.6
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -11,7 +11,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2016 Erik Kai Alain Zscheile
+ * Copyright (c) 2017 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -44,9 +44,9 @@ static string my_tolower(string instr) {
   return instr;
 }
 
-static unsigned int xsel_gmatcht(const string &matcht) {
-  if(matcht == "whole" || matcht == "=") return 1;
-  if(matcht == "part"  || matcht == "LIKE") return 2;
+static unsigned int xsel_gmatcht(const string &mat) {
+  if(mat == "whole" || mat == "=") return 1;
+  if(mat == "part"  || mat == "LIKE") return 2;
   return 0;
 }
 
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
             "  push                                update table file\n"
             "\n"
             "Commands can be joined\n\n"
-            "zsdatab v0.2.0 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>\n"
+            "zsdatab v0.2.6 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>\n"
             "released under X11-License\n";
     return 1;
   } else if(argc == 2) {
