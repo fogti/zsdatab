@@ -227,8 +227,8 @@ namespace zsdatab {
       context_common& replace_part(const std::string& field, const std::string& from, const std::string& to);
 
       // report
-      auto get_column_data(const size_t colnr, bool _uniq = false) const -> std::vector<std::string>;
-      auto get_column_data(const std::string &colname, bool _uniq = false) const -> std::vector<std::string>;
+      auto get_column_data(const size_t colnr, const bool _uniq = false) const -> std::vector<std::string>;
+      auto get_column_data(const std::string &colname, const bool _uniq = false) const -> std::vector<std::string>;
 
       auto get_metadata() const noexcept -> const metadata&;
       auto get_field_nr(const std::string &colname) const -> size_t;
@@ -346,7 +346,7 @@ namespace zsdatab {
 
   /* inner_join - join to buffers into a table via inner join (common subset)
    * @return : table : composed table
-   *         - buffer : ccomposed buffer
+   *         - buffer : composed buffer
    *
    * @param sep : char : (metadata) column separator
    *

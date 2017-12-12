@@ -2,7 +2,7 @@
  *        class: zsdatab::intern::context_common
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.1.6
+ *      version: 0.2.6
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2016 Erik Kai Alain Zscheile
+ * Copyright (c) 2017 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -52,9 +52,10 @@ namespace zsdatab {
 
     // select
     context_common& context_common::sort() {
+      const size_t colcnt = get_metadata().get_field_count();
       std::sort(_buffer.begin(), _buffer.end(),
-        [](const vector<string> &a, const vector<string> &b) -> bool {
-          for(size_t i = 0; i < a.size(); ++i) {
+        [colcnt](const vector<string> &a, const vector<string> &b) {
+          for(size_t i = 0; i < colcnt; ++i) {
             if(a[i] < b[i]) return true;
             else if(a[i] > b[i]) break;
           }
@@ -150,17 +151,10 @@ namespace zsdatab {
     }
 
     // report
-    vector<string> context_common::get_column_data(const string &colname, bool _uniq) const {
+    vector<string> context_common::get_column_data(const size_t field, const bool _uniq) const {
       vector<string> ret;
-      size_t fieldn;
-      try {
-        fieldn = get_field_nr(colname);
-      } catch(...) {
-        return ret;
-      }
-
       for(auto &&i : _buffer)
-        ret.push_back(i[fieldn]);
+        ret.emplace_back(i[field]);
 
       if(!ret.empty() && _uniq) {
         std::sort(ret.begin(), ret.end());
@@ -171,6 +165,16 @@ namespace zsdatab {
       }
 
       return ret;
+    }
+
+    vector<string> context_common::get_column_data(const string &colname, const bool _uniq) const {
+      size_t fieldn;
+      try {
+        fieldn = get_field_nr(colname);
+      } catch(...) {
+        return {};
+      }
+      return get_column_data(fieldn, _uniq);
     }
   }
 }
