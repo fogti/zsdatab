@@ -19,7 +19,7 @@ add_library(zsdatable SHARED src/3rdparty/gzstream/gzstream.C
                              src/context/common.cxx src/context/main.cxx src/context/operators.cxx src/context/wrappers.cxx
                              src/table/common.cxx src/table/gz.cxx src/table/main.cxx src/table/packed.cxx
                              src/join.cxx src/map.cxx src/metadata.cxx src/operators.cxx src/transaction.cxx src/zsdatable.hpp)
-set_target_properties(zsdatable PROPERTIES VERSION "8.1.2" SOVERSION 8)
+set_target_properties(zsdatable PROPERTIES VERSION "9.0.0" SOVERSION 9)
 target_link_libraries(zsdatable ZLIB::ZLIB)
 
 add_executable(zsdatab-entry src/entry.cxx)

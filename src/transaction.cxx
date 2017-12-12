@@ -203,28 +203,22 @@ namespace zsdatab {
   }
 
   transaction& transaction::filter(const string& field, const string& value, const bool whole) {
-    auto p = new intern::ta::filter;
-    try {
-      p->field = _meta.get_field_nr(field);
-      p->value = value;
-    } catch(...) {
-      delete p;
-      throw;
-    }
+    auto p = make_shared<intern::ta::filter>();
+    p->field = _meta.get_field_nr(field);
+    p->value = value;
     p->whole = whole;
 
     switch(ta__get_lasta(_actions)) {
       case action_name::CLEAR:
-        delete p;
         break;
 
       case action_name::SORT:
-        _actions.back() = shared_ptr<intern::ta::action>(p);
+        _actions.back() = p;
         sort();
         break;
 
       case action_name::UNIQ:
-        _actions.back() = shared_ptr<intern::ta::action>(p);
+        _actions.back() = p;
         uniq();
         break;
 

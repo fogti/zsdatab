@@ -32,7 +32,7 @@
 #include <ctype.h>
 #include <iostream>
 #include <fstream>
-
+#include <algorithm>
 #include <deque>
 
 #include "zsdatable.hpp"

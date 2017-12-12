@@ -33,15 +33,10 @@
 # define ZSDATABLE_HPP 1
 # include <istream>
 # include <ostream>
+# include <string>
+# include <memory>
 # include <unordered_map>
 # include <vector>
-# include <string>
-
-# include <type_traits>
-# include <algorithm>
-# include <utility>
-# include <memory>
-# include <exception>
 
 # include <experimental/propagate_const>
 
@@ -248,12 +243,11 @@ namespace zsdatab {
     std::istream& operator>>(std::istream& stream, context_common& ctx);
 
     // minimal non-abstract template base class for contexts
-    template<class T, class = typename std::enable_if<std::is_base_of<buffer_interface, T>::value>::type>
+    template<class T>
     class context_base : public context_common {
      public:
       explicit context_base(T &tab): context_common(tab), _table(tab) { }
       context_base(const T &&tab) = delete;
-      virtual ~context_base() noexcept = default;
 
       virtual auto get_const_table() const noexcept -> const table& final
         { return _table; }
@@ -290,24 +284,21 @@ namespace zsdatab {
 
   class const_context final : public intern::context_base<const table> {
    public:
-    explicit const_context(const table &tab);
-    const_context(const buffer_interface &o);
+    using context_base<const table>::context_base;
 
     const_context(const table &&tab) = delete;
     const_context(const buffer_interface &&o) = delete;
     const_context(const const_context &o) = default;
     const_context(const_context &&o) noexcept = default;
-    virtual ~const_context() noexcept = default;
   };
 
   class context final : public intern::context_base<table> {
     friend class const_context;
 
    public:
-    explicit context(table& tab);
+    using context_base<table>::context_base;
     context(const context &o) = default;
     context(context &&o) noexcept = default;
-    virtual ~context() noexcept = default;
 
     // transfer
     void push();
