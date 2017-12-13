@@ -2,7 +2,7 @@
  *        class: zsdatab::table
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.2
+ *      version: 0.2.6
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2016 Erik Kai Alain Zscheile
+ * Copyright (c) 2017 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -33,8 +33,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 #include <fstream>
 #include <iostream>
+#include <utility>
 
 #include "table/common.hpp"
 
@@ -43,7 +45,7 @@ using namespace std;
 namespace zsdatab {
   // concrete table implementations
   namespace intern {
-    class permanent_table : public permanent_table_common {
+    class permanent_table final : public permanent_table_common {
      public:
       explicit permanent_table(const string &name)
         : permanent_table_common(name)
@@ -92,7 +94,7 @@ namespace zsdatab {
       }
     };
 
-    class in_memory_table : public table_interface {
+    class in_memory_table final : public table_interface {
       const metadata _meta;
       buffer_t _data;
 
@@ -103,14 +105,8 @@ namespace zsdatab {
       in_memory_table(const metadata &o, const buffer_t &n):
         _meta(o), _data(n) { }
 
-      ~in_memory_table() noexcept = default;
-
       bool good() const noexcept {
         return _meta.good();
-      }
-
-      bool empty() const noexcept {
-        return _data.empty();
       }
 
       auto get_metadata() const noexcept -> const metadata& {
@@ -143,14 +139,18 @@ namespace zsdatab {
     : _t(new intern::in_memory_table(meta, n)) { }
 
   table::table(shared_ptr<table_interface> &&o)
-    : _t(o) { }
+    : _t(std::move(o)) { }
+
+  void table::swap(table &o) noexcept {
+    std::swap(_t, o._t);
+  }
 
   bool table::good() const noexcept {
     return _t->good();
   }
 
   bool table::empty() const noexcept {
-    return _t->empty();
+    return _t->data().empty();
   }
 
   auto table::get_metadata() const noexcept -> const metadata& {
@@ -167,7 +167,7 @@ namespace zsdatab {
 
   void table::data(const buffer_t &n) {
     // copy on write
-    if(n != data()) {
+    if(n != _t->data()) {
       if(!_t.unique()) _t = _t->clone();
       _t->data(n);
     }

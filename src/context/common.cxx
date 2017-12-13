@@ -99,14 +99,15 @@ namespace zsdatab {
       return *this;
     }
 
-    context_common& context_common::filter(const size_t field, const string& value, const bool whole) {
+    context_common& context_common::filter(const size_t field, const string& value, const bool whole, const bool neg) {
       if(empty()) return *this;
 
       using namespace std;
       _buffer.erase(
         remove_if(_buffer.begin(), _buffer.end(),
-          [value, whole, field](const vector<string> &s) noexcept -> bool {
-            return (s[field].find(value) == string::npos) || (whole && s[field] != value); // assuming no overflow
+          [field, value, whole, neg](const vector<string> &s) noexcept -> bool {
+            const bool res = (s[field].find(value) == string::npos) || (whole && s[field] != value); // assuming no overflow
+            return (neg ? (!res) : res);
           }
         ),
         _buffer.end());
