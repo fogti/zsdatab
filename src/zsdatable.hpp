@@ -98,6 +98,9 @@ namespace zsdatab {
     auto serialize(const std::vector<std::string> &line) const -> std::string;
   };
 
+  inline void swap(metadata &a, metadata &b)
+    { a.swap(b); }
+
   bool operator==(const metadata &a, const metadata &b);
   bool operator!=(const metadata &a, const metadata &b);
 
@@ -130,7 +133,6 @@ namespace zsdatab {
     virtual ~table_interface() noexcept = default;
 
     virtual bool good() const noexcept = 0;
-    virtual bool empty() const noexcept = 0;
 
     virtual auto get_metadata() const noexcept -> const metadata& = 0;
     virtual auto data() const noexcept -> const buffer_t& = 0;
@@ -156,6 +158,8 @@ namespace zsdatab {
     table(table &&o) = default;
     virtual ~table() noexcept = default;
 
+    void swap(table &o) noexcept;
+
     bool good() const noexcept;
     bool empty() const noexcept;
 
@@ -167,6 +171,9 @@ namespace zsdatab {
 
     auto clone() const -> std::shared_ptr<table_interface>;
   };
+
+  inline void swap(table &a, table &b)
+    { a.swap(b); }
 
   std::ostream& operator<<(std::ostream& stream, const table& tab);
   std::istream& operator>>(std::istream& stream, table& tab);
@@ -207,8 +214,8 @@ namespace zsdatab {
       context_common& sort();
       context_common& uniq();
       context_common& negate();
-      context_common& filter(const size_t field, const std::string& value, const bool whole = true);
-      context_common& filter(const std::string& field, const std::string& value, const bool whole = true);
+      context_common& filter(const size_t field, const std::string& value, const bool whole = true, const bool neg = false);
+      context_common& filter(const std::string& field, const std::string& value, const bool whole = true, const bool neg = false);
 
       // change
       context_common& set_field(const size_t field, const std::string& value);
@@ -344,7 +351,7 @@ namespace zsdatab {
    * @param a, b : buffer_interface : buffers to join
    *             - metadata.cols (equal names are assumed equivalent and will be joined)
    */
-  table inner_join(char sep, const buffer_interface &a, const buffer_interface &b);
+  table inner_join(const char sep, const buffer_interface &a, const buffer_interface &b);
 
   // table_map_fields - map field names (mappings: {from, to}) (e.g. for an following join)
   table table_map_fields(const buffer_interface &in, const std::unordered_map<std::string, std::string>& mappings);

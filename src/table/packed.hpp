@@ -36,7 +36,7 @@
 namespace zsdatab {
   namespace intern {
     template<class Tistream, class Tostream>
-    struct packed_table_common : public permanent_table_common {
+    struct packed_table_common final : public permanent_table_common {
       explicit packed_table_common(const std::string &name): permanent_table_common(name) {
         Tistream in(_path.c_str());
         if(!in) _valid = false;

@@ -47,8 +47,8 @@ namespace zsdatab {
       return *this;
     }
 
-    context_common& context_common::filter(const string& field, const string& value, const bool whole) {
-      return filter(get_field_nr(field), value, whole);
+    context_common& context_common::filter(const string& field, const string& value, const bool whole, const bool neg) {
+      return filter(get_field_nr(field), value, whole, neg);
     }
 
     context_common& context_common::set_field(const string& field, const string& value) {

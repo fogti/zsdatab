@@ -33,7 +33,7 @@
 #include <algorithm>
 #include "zsdatable.hpp"
 
-zsdatab::table zsdatab::inner_join(char sep, const buffer_interface &a, const buffer_interface &b) {
+zsdatab::table zsdatab::inner_join(const char sep, const buffer_interface &a, const buffer_interface &b) {
   struct column_join {
     size_t a, b, c;
   };
