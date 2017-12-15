@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <utility>
 #include "zsdatable.hpp"
 
 using namespace std;
@@ -45,6 +46,12 @@ namespace zsdatab {
 
     context_common::context_common(const buffer_interface &bif)
       : _buffer(bif.data()) { }
+
+    context_common::context_common(const buffer_t &o)
+      : _buffer(o) { }
+
+    context_common::context_common(buffer_t &&o)
+      : _buffer(std::move(o)) { }
 
     context_common& context_common::pull() {
       _buffer = get_const_table().data();
