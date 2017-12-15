@@ -37,6 +37,7 @@
 # include <memory>
 # include <unordered_map>
 # include <vector>
+# include <utility>
 
 # include <experimental/propagate_const>
 
@@ -141,6 +142,9 @@ namespace zsdatab {
     virtual auto clone() const -> std::shared_ptr<table_interface> = 0;
   };
 
+  class const_context;
+  class context;
+
   // table (delegating) class
   class table final : public buffer_interface, public table_interface {
     std::shared_ptr<table_interface> _t;
@@ -170,6 +174,11 @@ namespace zsdatab {
     void data(const buffer_t &n);
 
     auto clone() const -> std::shared_ptr<table_interface>;
+
+    auto filter(const size_t field, const std::string& value, const bool whole = true, const bool neg = false) -> context;
+    auto filter(const std::string& field, const std::string& value, const bool whole = true, const bool neg = false) -> context;
+    auto filter(const size_t field, const std::string& value, const bool whole = true, const bool neg = false) const -> const_context;
+    auto filter(const std::string& field, const std::string& value, const bool whole = true, const bool neg = false) const -> const_context;
   };
 
   inline void swap(table &a, table &b)
@@ -195,6 +204,8 @@ namespace zsdatab {
     class context_common : public buffer_interface {
      public:
       context_common(const buffer_interface &bif);
+      context_common(const buffer_t &o);
+      context_common(buffer_t &&o);
       context_common(const context_common &ctx) = default;
       context_common(context_common &&ctx) noexcept = default;
       virtual ~context_common() noexcept = default;
@@ -254,7 +265,15 @@ namespace zsdatab {
     class context_base : public context_common {
      public:
       explicit context_base(T &tab): context_common(tab), _table(tab) { }
+
+      context_base(T &tab, const buffer_t &o)
+        : context_common(o), _table(tab) { }
+
+      context_base(T &tab, buffer_t &&o)
+        : context_common(std::move(o)), _table(tab) { }
+
       context_base(const T &&tab) = delete;
+      context_base(const T &&tab, const buffer_t &&o) = delete;
 
       virtual auto get_const_table() const noexcept -> const table& final
         { return _table; }
@@ -286,8 +305,6 @@ namespace zsdatab {
       return (context_base<T>(b) = a) += b;
     }
   }
-
-  class context;
 
   class const_context final : public intern::context_base<const table> {
    public:
