@@ -166,9 +166,9 @@ namespace zsdatab {
   bool metadata::rename_field(const string &from, const string &to) {
     auto &cols = _d->cols;
     auto it = find(cols.begin(), cols.end(), from);
-    if(it == cols.end()) return false;
-    *it = to;
-    return true;
+    const bool ret = (it != cols.end());
+    if(ret) *it = to;
+    return ret;
   }
 
   void metadata::separator(const char sep) noexcept {
