@@ -35,13 +35,12 @@
 #include <unistd.h>
 
 #include <fstream>
-#include <iostream>
+#include <iostream> // cerr
 #include <utility>
 
-#include "table/common.hpp"
+#include <table/common.hpp>
 
 using namespace std;
-
 
 namespace zsdatab {
   // concrete table implementations
@@ -126,20 +125,6 @@ namespace zsdatab {
         return make_shared<in_memory_table>(_meta, _data);
       }
     };
-
-    static buffer_t buffer_filter(const buffer_t &buf, const size_t field, const std::string& value, const bool whole, const bool neg) {
-      if(buf.empty()) return buf;
-
-      buffer_t ret;
-
-      for(auto &&s : buf) {
-        // assuming no overflow
-        if(neg == ((s[field].find(value) == string::npos) || (whole && s[field] != value)))
-          ret.emplace_back(std::move(s));
-      }
-
-      return ret;
-    }
   }
 
   // for permanent tables
@@ -190,21 +175,5 @@ namespace zsdatab {
 
   auto table::clone() const -> std::shared_ptr<table_interface> {
     return _t->clone();
-  }
-
-  auto table::filter(const size_t field, const std::string& value, const bool whole, const bool neg) -> context {
-    return context(*this, intern::buffer_filter(data(), field, value, whole, neg));
-  }
-
-  auto table::filter(const std::string& field, const std::string& value, const bool whole, const bool neg) -> context {
-    return filter(get_metadata().get_field_nr(field), value, whole, neg);
-  }
-
-  auto table::filter(const size_t field, const std::string& value, const bool whole, const bool neg) const -> const_context {
-    return const_context(*this, intern::buffer_filter(data(), field, value, whole, neg));
-  }
-
-  auto table::filter(const std::string& field, const std::string& value, const bool whole, const bool neg) const -> const_context {
-    return filter(get_metadata().get_field_nr(field), value, whole, neg);
   }
 }
