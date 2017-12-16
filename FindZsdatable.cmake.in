@@ -5,9 +5,8 @@
 #  Zsdatable_INCLUDE_DIRS - the Zsdatable include directories
 #  Zsdatable_LIBRARIES - link these to use Zsdatable
 
-include(LibFindMacros)
-
-libfind_package(Zsdatable ZLIB)
+include(CMakeFindDependencyMacro)
+find_dependency(ZLIB)
 
 find_path(Zsdatable_INCLUDE_DIR
   NAMES zsdatable.hpp
@@ -19,8 +18,11 @@ find_library(Zsdatable_LIBRARY
   PATHS @INSTALL_LIB_DIR@
 )
 
-# Set the include dir variables and the libraries and let libfind_process do the rest.
-# NOTE: Singular variables for this library, plural for libraries - this lib depends on.
-set(Zsdatable_PROCESS_INCLUDES Zsdatable_INCLUDE_DIR)
-set(Zsdatable_PROCESS_LIBS Zsdatable_LIBRARY ZLIB_LIBRARIES)
-libfind_process(Zsdatable)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Zsdatable DEFAULT_MSG
+                                  Zsdatable_LIBRARY ZLIB_LIBRARIES Zsdatable_INCLUDE_DIR)
+
+mark_as_advanced(Zsdatable_INCLUDE_DIR Zsdatable_LIBRARY)
+
+set(Zsdatable_INCLUDE_DIRS ${Zsdatable_INCLUDE_DIR})
+set(Zsdatable_LIBRARIES ${Zsdatable_LIBRARY} ${ZLIB_LIBRARIES})
