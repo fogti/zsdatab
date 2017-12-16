@@ -104,6 +104,7 @@ int main(int argc, char *argv[]) {
     while(!commands.empty()) {
       cmd = my_tolower(commands.front());
       commands.pop_front();
+      string selector;
 
       // check args
       {
@@ -111,15 +112,20 @@ int main(int argc, char *argv[]) {
         if(cmd == "ch" || cmd == "select" || cmd == "appart" || cmd == "rmpart") {
           if(commands.size() < 2 || commands.front().empty()) args_ok = false;
           else field = commands[0];
+          commands.pop_front();
         } else if(cmd == "xsel") {
           if(commands.size() < 3 || commands[0].empty() || commands[1].empty()) args_ok = false;
           else if(!xsel_gmatcht(commands[0])) args_ok = false;
           else field = commands[1];
+          selector = commands[0];
+          commands.pop_front();
+          commands.pop_front();
         } else if(cmd == "new") {
           if(commands.size() < colcnt) args_ok = false;
         } else if(cmd == "get") {
           if(commands.empty() || commands.front().empty()) args_ok = false;
           else field = commands[0];
+          commands.pop_front();
         } else if(cmd == "rm" || cmd == "rmexcept" || cmd == "neg" || cmd == "quit" || cmd == "push") {
           // do nothing
         } else {
@@ -138,9 +144,7 @@ int main(int argc, char *argv[]) {
         zsdatab::context tmp_ctx = my_ctx;
         tmp_ctx.negate();
 
-        my_ctx.set_field(field, commands[1]);
-
-        commands.pop_front();
+        my_ctx.set_field(field, commands[0]);
         commands.pop_front();
 
         tmp_ctx += my_ctx;
@@ -149,9 +153,7 @@ int main(int argc, char *argv[]) {
         zsdatab::context tmp_ctx = my_ctx;
         tmp_ctx.negate();
 
-        my_ctx.append_part(field, commands[1]);
-
-        commands.pop_front();
+        my_ctx.append_part(field, commands[0]);
         commands.pop_front();
 
         tmp_ctx += my_ctx;
@@ -160,28 +162,23 @@ int main(int argc, char *argv[]) {
         zsdatab::context tmp_ctx = my_ctx;
         tmp_ctx.negate();
 
-        my_ctx.remove_part(field, commands[1]);
-
-        commands.pop_front();
+        my_ctx.remove_part(field, commands[0]);
         commands.pop_front();
 
         tmp_ctx += my_ctx;
         tmp_ctx.push();
       } else if(cmd == "select") {
-        my_ctx.filter(field, commands[1]);
-        commands.pop_front();
+        my_ctx.filter(field, commands[0]);
         commands.pop_front();
       } else if(cmd == "xsel") {
-        my_ctx.filter(field, commands[2], xsel_gmatcht(commands[0]) == 1);
-        commands.pop_front();
-        commands.pop_front();
+        my_ctx.filter(field, commands[0], xsel_gmatcht(selector) == 1);
         commands.pop_front();
       } else if(cmd == "new") {
         vector<string> line;
         line.reserve(colcnt);
 
         for(size_t fieldn = 0; fieldn < colcnt; ++fieldn) {
-          line.emplace_back(commands[0]);
+          line.emplace_back(commands.front());
           commands.pop_front();
         }
 
