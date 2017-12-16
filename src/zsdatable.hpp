@@ -50,6 +50,11 @@ namespace zsdatab {
     template<class T>
     using pimpl = std::experimental::propagate_const<std::unique_ptr<T>>;
 
+    template<class T>
+    struct swapable {
+      virtual void swap(T &o) noexcept = 0;
+    };
+
     namespace ta {
       // base class for transaction parts
       struct action;
@@ -57,7 +62,7 @@ namespace zsdatab {
   }
 
   // metadata class
-  class metadata final {
+  class metadata final : public intern::swapable<metadata> {
     struct impl;
     intern::pimpl<impl> _d;
 
@@ -98,9 +103,6 @@ namespace zsdatab {
     auto deserialize(const std::string &line) const -> std::vector<std::string>;
     auto serialize(const std::vector<std::string> &line) const -> std::string;
   };
-
-  inline void swap(metadata &a, metadata &b)
-    { a.swap(b); }
 
   bool operator==(const metadata &a, const metadata &b);
   bool operator!=(const metadata &a, const metadata &b);
@@ -146,7 +148,7 @@ namespace zsdatab {
   class context;
 
   // table (delegating) class
-  class table final : public buffer_interface, public table_interface {
+  class table final : public buffer_interface, public table_interface, public intern::swapable<table> {
     std::shared_ptr<table_interface> _t;
 
    public:
@@ -180,9 +182,6 @@ namespace zsdatab {
     auto filter(const size_t field, const std::string& value, const bool whole = true, const bool neg = false) const -> const_context;
     auto filter(const std::string& field, const std::string& value, const bool whole = true, const bool neg = false) const -> const_context;
   };
-
-  inline void swap(table &a, table &b)
-    { a.swap(b); }
 
   std::ostream& operator<<(std::ostream& stream, const table& tab);
   std::istream& operator>>(std::istream& stream, table& tab);
@@ -275,7 +274,7 @@ namespace zsdatab {
       context_base(const T &&tab) = delete;
       context_base(const T &&tab, const buffer_t &&o) = delete;
 
-      virtual auto get_const_table() const noexcept -> const table& final
+      auto get_const_table() const noexcept -> const table& final
         { return _table; }
 
       // delegators
@@ -372,5 +371,8 @@ namespace zsdatab {
 
   // table_map_fields - map field names (mappings: {from, to}) (e.g. for an following join)
   table table_map_fields(const buffer_interface &in, const std::unordered_map<std::string, std::string>& mappings);
+
+  template<class T>
+  void swap(intern::swapable<T> &a, intern::swapable<T> &b) { a.swap(b); }
 }
 #endif
