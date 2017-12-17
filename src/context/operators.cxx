@@ -56,10 +56,6 @@ namespace zsdatab {
       return *this;
     }
 
-    context_common& context_common::operator+=(const context_common &o) {
-      return *this += static_cast<const buffer_interface&>(o);
-    }
-
     context_common& context_common::operator+=(const buffer_interface &o) {
       if(this != &o) {
         op_table_compat_chk(get_const_table(), o.get_const_table());

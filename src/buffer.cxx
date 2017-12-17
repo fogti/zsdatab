@@ -1,5 +1,5 @@
 /*************************************************
- *         part: extra table implementations (gzip tables)
+ *        class: zsdatab::buffer_interface
  *      library: zsdatable
  *      package: zsdatab
  *      version: 0.2.6
@@ -30,24 +30,10 @@
  *
  *************************************************/
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fstream>
-#include <iostream>
-
-#include <gzstream.h>
-#include "table/packed.hpp"
+#include "zsdatable.hpp"
 
 namespace zsdatab {
-  using namespace std;
-  using namespace GZSTREAM_NAMESPACE;
-
-  bool create_gzipped_table(const string &_path, const metadata &_meta) {
-    return intern::create_packed_table_common<ogzstream>(_path, _meta);
-  }
-
-  table make_gzipped_table(const string &_path) {
-    return intern::make_packed_table_common<igzstream, ogzstream>(_path);
+  bool buffer_interface::empty() const noexcept {
+    return data().empty();
   }
 }
