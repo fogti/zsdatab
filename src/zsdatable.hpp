@@ -123,6 +123,7 @@ namespace zsdatab {
     virtual auto get_const_table() const noexcept -> const table& = 0;
 
     virtual auto data() const noexcept -> const buffer_t& = 0;
+    bool empty() const noexcept;
   };
 
   struct table_clone_error : public std::runtime_error {
@@ -167,8 +168,6 @@ namespace zsdatab {
     void swap(table &o) noexcept;
 
     bool good() const noexcept;
-    bool empty() const noexcept;
-
     auto get_metadata() const noexcept -> const metadata&;
     auto get_const_table() const noexcept -> const table&;
 
@@ -212,12 +211,10 @@ namespace zsdatab {
       auto operator=(const context_common &o) -> context_common&;
       auto operator=(const buffer_interface &o) -> context_common&;
       auto operator=(context_common &&o) -> context_common&;
-      auto operator+=(const context_common &o) -> context_common&;
       auto operator+=(const buffer_interface &o) -> context_common&;
       auto operator+=(const std::vector<std::string> &line) -> context_common&;
 
       context_common& pull();
-      bool empty() const noexcept;
 
       // select
       context_common& clear() noexcept;

@@ -149,10 +149,6 @@ namespace zsdatab {
     return _t->good();
   }
 
-  bool table::empty() const noexcept {
-    return _t->data().empty();
-  }
-
   auto table::get_metadata() const noexcept -> const metadata& {
     return _t->get_metadata();
   }

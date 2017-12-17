@@ -37,10 +37,6 @@ using namespace std;
 
 namespace zsdatab {
   namespace intern {
-    bool context_common::empty() const noexcept {
-      return _buffer.empty();
-    }
-
     // select
     context_common& context_common::clear() noexcept {
       _buffer.clear();

@@ -2,7 +2,7 @@
  *       header: zsdatab::intern::packed_table_common
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.2
+ *      version: 0.2.6
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2016 Erik Kai Alain Zscheile
+ * Copyright (c) 2017 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
