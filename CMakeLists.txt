@@ -13,21 +13,21 @@ find_package(ZLIB REQUIRED)
 
 configure_file(FindZsdatable.cmake.in "${PROJECT_BINARY_DIR}/FindZsdatable.cmake")
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty/gzstream" ${ZLIB_INCLUDE_DIRS})
+include_directories(include lib lib/3rdparty/gzstream ${ZLIB_INCLUDE_DIRS})
 
-add_library(zsdatable SHARED src/3rdparty/gzstream/gzstream.C
-                             src/context/common.cxx src/context/main.cxx src/context/operators.cxx src/context/wrappers.cxx
-                             src/table/common.cxx src/table/filter.cxx src/table/gz.cxx src/table/main.cxx src/table/packed.cxx
-                             src/buffer.cxx src/join.cxx src/map.cxx src/metadata.cxx src/operators.cxx src/transaction.cxx src/zsdatable.hpp)
+# WARNING: you must re-run cmake every time a file under lib/ is added
+#          because we use file globbing
+file(GLOB_RECURSE LibSources lib/*.cxx lib/*.C)
+add_library(zsdatable SHARED ${LibSources} include/zsdatable.hpp)
 set_target_properties(zsdatable PROPERTIES VERSION "9.0.0" SOVERSION 9)
 target_link_libraries(zsdatable ZLIB::ZLIB)
 
-add_executable(zsdatab-entry src/entry.cxx)
+add_executable(zsdatab-entry entry.cxx)
 target_link_libraries(zsdatab-entry zsdatable)
 
 install(TARGETS zsdatable DESTINATION "${INSTALL_LIB_DIR}")
 install(TARGETS zsdatab-entry DESTINATION "${INSTALL_BIN_DIR}")
-install(FILES src/zsdatable.hpp DESTINATION "${INSTALL_INCLUDE_DIR}")
+install(FILES include/zsdatable.hpp DESTINATION "${INSTALL_INCLUDE_DIR}")
 install(FILES "${PROJECT_BINARY_DIR}/FindZsdatable.cmake" DESTINATION "${INSTALL_CMAKE_DIR}")
 
 install(FILES zsdatable DESTINATION "${INSTALL_BIN_DIR}" PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
