@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(ZLIB REQUIRED)
 
-configure_file(FindZsdatable.cmake.in "${PROJECT_BINARY_DIR}/FindZsdatable.cmake")
+configure_file(FindZsdatable.cmake.in "${PROJECT_BINARY_DIR}/FindZsdatable.cmake" @ONLY)
 
 include_directories(include lib lib/3rdparty/gzstream ${ZLIB_INCLUDE_DIRS})
 
