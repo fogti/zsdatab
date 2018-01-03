@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(ZLIB REQUIRED)
+find_package(Threads REQUIRED)
 
 configure_file(FindZsdatable.cmake.in "${PROJECT_BINARY_DIR}/FindZsdatable.cmake" @ONLY)
 
@@ -20,7 +21,7 @@ include_directories(include lib lib/3rdparty/gzstream ${ZLIB_INCLUDE_DIRS})
 file(GLOB_RECURSE LibSources lib/*.cxx lib/*.C)
 add_library(zsdatable SHARED ${LibSources} include/zsdatable.hpp)
 set_target_properties(zsdatable PROPERTIES VERSION "9.0.0" SOVERSION 9)
-target_link_libraries(zsdatable ZLIB::ZLIB)
+target_link_libraries(zsdatable ZLIB::ZLIB ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(zsdatab-entry entry.cxx)
 target_link_libraries(zsdatab-entry zsdatable)
