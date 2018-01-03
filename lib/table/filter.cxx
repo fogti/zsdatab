@@ -2,7 +2,7 @@
  *        class: zsdatab::table::filter
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.6
+ *      version: 0.2.7
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -30,6 +30,7 @@
  *
  *************************************************/
 
+#include <future>
 #include <zsdatable.hpp>
 using namespace std;
 
@@ -39,12 +40,23 @@ namespace zsdatab {
       buffer_t buffer_filter(const buffer_t &buf, const size_t field, const string& value, const bool whole, const bool neg) {
         if(buf.empty()) return buf;
 
+        vector<future<bool>> futs;
+        futs.reserve(buf.size());
+
+        for(auto &&i : buf)
+          futs.emplace_back(async(launch::async, [field, value, whole, neg](const auto s) -> bool {
+            return neg == ((s[field].find(value) == string::npos) || (whole && s[field] != value));
+          }, std::move(i)));
+
         buffer_t ret;
         ret.reserve(buf.size());
 
-        for(auto &&s : buf)
-          if(neg == ((s[field].find(value) == string::npos) || (whole && s[field] != value)))
+        size_t n = 0;
+        for(auto &&s : buf) {
+          if(futs.at(n).get())
             ret.emplace_back(std::move(s));
+          ++n;
+        }
 
         ret.shrink_to_fit();
         return ret;
