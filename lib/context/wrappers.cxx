@@ -2,7 +2,7 @@
  *        class: zsdatab::intern::context_common
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.6
+ *      version: 0.2.8
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -65,13 +65,11 @@ namespace zsdatab {
 
     // report
     vector<string> context_common::get_column_data(const string &colname, const bool _uniq) const {
-      size_t fieldn;
       try {
-        fieldn = get_field_nr(colname);
+        return get_column_data(get_field_nr(colname), _uniq);
       } catch(...) {
         return {};
       }
-      return get_column_data(fieldn, _uniq);
     }
 
     auto context_common::get_metadata() const noexcept -> const metadata& {

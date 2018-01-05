@@ -2,7 +2,7 @@
  *        class: zsdatab::metadata
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.6
+ *      version: 0.2.8
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -45,22 +45,21 @@ static auto deserialize_line(const string &line, const char my_sep) -> vector<st
     bool escape = false;
     string col2;
     for(auto &&c : col) {
-      if(!escape) {
+      if(escape) {
+        escape = false;
+        switch(c) {
+          case '-': c = 0; break;
+          case 'd': c = my_sep; break;
+          case 'n': c = '\n'; break;
+        }
+        if(c) col2 += c;
+      } else {
         // default mode
         if(c == '\\') escape = true;
-        else          col2 += c;
-      } else {
-        // escaped mode
-        switch(c) {
-          case '-': break;
-          case 'd': col2 += my_sep; break;
-          case 'n': col2 += '\n'; break;
-          default:  col2 += c;
-        }
-        escape = false;
+        else col2 += c;
       }
     }
-    ret.push_back(col2);
+    ret.emplace_back(move(col2));
   }
   return ret;
 }
