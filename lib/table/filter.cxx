@@ -50,9 +50,8 @@ namespace zsdatab {
     ret.reserve(buf.size());
 
     size_t n = 0;
-    for(auto &&s : buf) {
-      if(futs.at(n).get())
-        ret.emplace_back(std::move(s));
+    for(auto &s : futs) {
+      if(s.get()) ret.emplace_back(buf.at(n));
       ++n;
     }
 

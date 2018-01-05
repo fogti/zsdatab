@@ -2,7 +2,7 @@
  *        class: zsdatab::intern::context_common
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.6
+ *      version: 0.2.8
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -114,7 +114,7 @@ namespace zsdatab {
         remove_if(_buffer.begin(), _buffer.end(),
           [field, value, whole, neg](const vector<string> &s) noexcept -> bool {
             const bool res = (s[field].find(value) == string::npos) || (whole && s[field] != value); // assuming no overflow
-            return (neg ? (!res) : res);
+            return neg != res;
           }
         ),
         _buffer.end());
@@ -123,22 +123,18 @@ namespace zsdatab {
     }
 
     context_common& context_common::set_field(const size_t field, const string& value) {
-      for(auto &l : _buffer)
-        l[field] = value;
-
+      for(auto &l : _buffer) l[field] = value;
       return *this;
     }
 
     context_common& context_common::append_part(const size_t field, const string& value) {
-      for(auto &l : _buffer)
-        l[field] += value;
-
+      for(auto &l : _buffer) l[field] += value;
       return *this;
     }
 
     context_common& context_common::remove_part(const size_t field, const string& value) {
       for(auto &l : _buffer) {
-        const string::size_type pos = l[field].find(value);
+        const auto pos = l[field].find(value);
         if(pos != string::npos) l[field].erase(pos, value.length());
       }
 
@@ -162,15 +158,14 @@ namespace zsdatab {
     // report
     vector<string> context_common::get_column_data(const size_t field, const bool _uniq) const {
       vector<string> ret;
-      for(auto &&i : _buffer)
+      ret.reserve(_buffer.size());
+      for(const auto &i : _buffer)
         ret.emplace_back(i[field]);
 
       if(!ret.empty() && _uniq) {
-        std::sort(ret.begin(), ret.end());
-        ret.erase(
-          std::unique(ret.begin(), ret.end()),
-          ret.end()
-        );
+        auto ie = ret.end();
+        std::sort(ret.begin(), ie);
+        ret.erase(std::unique(ret.begin(), ie), ie);
       }
 
       return ret;
