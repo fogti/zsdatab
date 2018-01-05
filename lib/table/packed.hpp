@@ -2,7 +2,7 @@
  *       header: zsdatab::intern::packed_table_common
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.6
+ *      version: 0.2.8
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -52,21 +52,21 @@ namespace zsdatab {
 
       ~packed_table_common() noexcept {
         if(good() && _modified && !_path.empty()) {
-#define FETPF "libzsdatable.so: ERROR: zsdatab::packed_table_common::~packed_table_common() (write) failed "
+#define FETPF "libzsdatable.so: ERROR: zsdatab::packed_table_common::~packed_table_common() (write) failed: "
           try {
             Tostream out(_path.c_str());
             if(!out)
-              std::cerr << FETPF << "(table open failed)\n";
+              std::cerr << FETPF << "table open failed\n";
             else
               out << _meta << table(_meta, data());
           } catch(const std::length_error &e) {
-            std::cerr << FETPF << "(corrupt table data)\n"
+            std::cerr << FETPF << "corrupt table data\n"
                 "  failure detected in: " << e.what() << '\n';
           } catch(const std::exception &e) {
-            std::cerr << FETPF << "(unknown error)\n"
+            std::cerr << FETPF << "unknown error\n"
                 "  failure detected in: " << e.what() << '\n';
           } catch(...) {
-            std::cerr << FETPF << "(unknown error - untraceable)\n";
+            std::cerr << FETPF << "unknown error - untraceable\n";
           }
 #undef FETPF
         }
