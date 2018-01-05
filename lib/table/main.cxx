@@ -73,21 +73,21 @@ namespace zsdatab {
 
       ~permanent_table() noexcept {
         if(good() && _modified && !_path.empty()) {
-#define FETPF "libzsdatable.so: ERROR: zsdatab::intern::permanent_table::~permanent_table() (write) failed "
+#define FETPF "libzsdatable.so: ERROR: zsdatab::intern::permanent_table::~permanent_table() (write) failed: "
           try {
             ofstream out(_path.c_str());
             if(!out)
-              cerr << FETPF << "(table open failed)\n";
+              cerr << FETPF << "table open failed\n";
             else
               out << table(_meta, data());
           } catch(const length_error &e) {
-            cerr << FETPF << "(corrupt table data)\n"
+            cerr << FETPF << "corrupt table data\n"
                     "  failure detected in: " << e.what() << '\n';
           } catch(const exception &e) {
-            cerr << FETPF << "(unknown error)\n"
+            cerr << FETPF << "unknown error\n"
                     "  failure detected in: " << e.what() << '\n';
           } catch(...) {
-            cerr << FETPF << "(unknown error - untraceable)\n";
+            cerr << FETPF << "unknown error - untraceable\n";
           }
 #undef FETPF
         }
