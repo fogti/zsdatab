@@ -2,7 +2,7 @@
  *         part: table joining
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.6
+ *      version: 0.2.8
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -85,17 +85,19 @@ zsdatab::table zsdatab::inner_join(const char sep, const buffer_interface &a, co
   for(auto &&x : a.data()) {
     for(auto &&y : b.data()) {
       vector<string> line(mt.get_field_count());
-      bool match = true;
-      for(auto &&col : merge_cols) {
-        const string value = x[col.second.a];
-        if(value == y[col.second.b]) {
-          line[col.second.c] = value;
-        } else {
-          match = false;
-          break;
+      {
+        bool match = true;
+        for(auto &&col : merge_cols) {
+          const string &value = x[col.second.a];
+          if(value == y[col.second.b]) {
+            line[col.second.c] = value;
+          } else {
+            match = false;
+            break;
+          }
         }
+        if(!match) continue;
       }
-      if(!match) continue;
 
       for(size_t i = 0; i < line.size(); ++i) {
         auto &l = line[i];

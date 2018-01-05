@@ -2,7 +2,7 @@
  *        class: zsdatab::intern::context_common (operators)
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.6
+ *      version: 0.2.8
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -85,16 +85,18 @@ namespace zsdatab {
 
     ostream& operator<<(ostream& stream, const context_common &ctx) {
       if(!stream) return stream;
+      const auto m = ctx.get_metadata();
       for(auto &&l : ctx.data())
-        stream << ctx.get_metadata().serialize(l) << '\n';
+        stream << m.serialize(l) << '\n';
       return stream;
     }
 
     istream& operator>>(istream& stream, context_common& ctx) {
       if(!stream) return stream;
+      const auto m = ctx.get_metadata();
       string tmp;
       while(getline(stream, tmp))
-        ctx += ctx.get_metadata().deserialize(tmp);
+        ctx += m.deserialize(tmp);
       return stream;
     }
   }
