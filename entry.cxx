@@ -1,7 +1,7 @@
 /*************************************************
  *      program: zsdatab-entry
  *      package: zsdatab
- *      version: 0.2.6
+ *      version: 0.2.8
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -11,7 +11,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
             "  push                                update table file\n"
             "\n"
             "Commands can be joined\n\n"
-            "zsdatab v0.2.6 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>\n"
+            "zsdatab v0.2.8 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>\n"
             "released under X11-License\n";
     return 1;
   } else if(argc == 2) {
