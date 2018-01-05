@@ -174,13 +174,10 @@ int main(int argc, char *argv[]) {
         my_ctx.filter(field, commands[0], xsel_gmatcht(selector) == 1);
         commands.pop_front();
       } else if(cmd == "new") {
-        vector<string> line;
-        line.reserve(colcnt);
-
-        for(size_t fieldn = 0; fieldn < colcnt; ++fieldn) {
-          line.emplace_back(commands.front());
-          commands.pop_front();
-        }
+        const auto cbi = commands.begin();
+        const auto cei = cbi + colcnt;
+        const vector<string> line(cbi, cei);
+        commands.erase(cbi, cei);
 
         my_ctx.pull();
         my_ctx += line;
