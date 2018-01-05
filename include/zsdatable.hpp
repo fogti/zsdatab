@@ -1,7 +1,7 @@
 /*************************************************
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.6
+ *      version: 0.2.8
  **************| ********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -11,7 +11,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -115,8 +115,7 @@ namespace zsdatab {
   // buffer_interface class:
   //  common interface for table, context and const_context
   //  provides an interface to a buffer and the associated metadata
-  class buffer_interface {
-   public:
+  struct buffer_interface {
     virtual ~buffer_interface() noexcept = default;
 
     virtual auto get_metadata() const noexcept -> const metadata& = 0;
@@ -132,8 +131,7 @@ namespace zsdatab {
 
   // table_interface class:
   //  common interface for tables
-  class table_interface {
-   public:
+  struct table_interface {
     virtual ~table_interface() noexcept = default;
 
     virtual bool good() const noexcept = 0;
@@ -306,6 +304,7 @@ namespace zsdatab {
    public:
     using context_base<const table>::context_base;
 
+    const_context(const context &o);
     const_context(const table &&tab) = delete;
     const_context(const buffer_interface &&o) = delete;
     const_context(const const_context &o) = default;

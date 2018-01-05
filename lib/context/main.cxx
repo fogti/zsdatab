@@ -2,7 +2,7 @@
  *        class: zsdatab::context
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.6
+ *      version: 0.2.8
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -32,6 +32,11 @@
 
 #include "zsdatable.hpp"
 
-void zsdatab::context::push() {
-  _table.data(_buffer);
+namespace zsdatab {
+  const_context::const_context(const context &o)
+    : context_base<const table>(o._table, o._buffer) { }
+
+  void context::push() {
+    _table.data(_buffer);
+  }
 }
