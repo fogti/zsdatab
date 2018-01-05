@@ -80,13 +80,13 @@ int gzstreambuf::underflow() { // used for input buffer only
     if ( ! (mode & std::ios::in) || ! opened)
         return EOF;
     // Josuttis' implementation of inbuf
-    int n_putback = gptr() - eback();
-    if ( n_putback > 4)
-        n_putback = 4;
-    memcpy( buffer + (4 - n_putback), gptr() - n_putback, n_putback);
+    unsigned n_putback = gptr() - eback();
+    if(n_putback > 4)
+      n_putback = 4;
+    memcpy(buffer + (4 - n_putback), gptr() - n_putback, n_putback);
 
     int num = gzread( file, buffer+4, bufferSize-4);
-    if (num <= 0) // ERROR or EOF
+    if(num <= 0) // ERROR or EOF
         return EOF;
 
     // reset buffer pointers
@@ -136,28 +136,24 @@ int gzstreambuf::sync() {
 // --------------------------------------
 
 gzstreambase::gzstreambase( const char* name, int mode) {
-    init( &buf);
-    open( name, mode);
+  init(&buf);
+  open(name, mode);
 }
 
 gzstreambase::~gzstreambase() {
-    buf.close();
+  buf.close();
 }
 
 void gzstreambase::open( const char* name, int open_mode) {
-    if ( ! buf.open( name, open_mode))
-        clear( rdstate() | std::ios::badbit);
+  if(!buf.open(name, open_mode))
+    clear(rdstate() | std::ios::badbit);
 }
 
 void gzstreambase::close() {
-    if ( buf.is_open())
-        if ( ! buf.close())
-            clear( rdstate() | std::ios::badbit);
+  if(buf.is_open() && !buf.close())
+    clear(rdstate() | std::ios::badbit);
 }
 
 #ifdef GZSTREAM_NAMESPACE
 } // namespace GZSTREAM_NAMESPACE
 #endif
-
-// ============================================================================
-// EOF //

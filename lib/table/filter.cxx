@@ -2,7 +2,7 @@
  *        class: zsdatab::table::filter
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.7
+ *      version: 0.2.8
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -35,37 +35,33 @@
 using namespace std;
 
 namespace zsdatab {
-  namespace intern {
-    namespace {
-      buffer_t buffer_filter(const buffer_t &buf, const size_t field, const string& value, const bool whole, const bool neg) {
-        if(buf.empty()) return buf;
+  static buffer_t buffer_filter(const buffer_t &buf, const size_t field, const string& value, const bool whole, const bool neg) {
+    if(buf.empty()) return {};
 
-        vector<future<bool>> futs;
-        futs.reserve(buf.size());
+    vector<future<bool>> futs;
+    futs.reserve(buf.size());
 
-        for(auto &&i : buf)
-          futs.emplace_back(async(launch::async, [field, value, whole, neg](const auto s) -> bool {
-            return neg == ((s[field].find(value) == string::npos) || (whole && s[field] != value));
-          }, std::move(i)));
+    for(const auto &i : buf)
+      futs.emplace_back(async([&value, whole, neg](const auto &s) -> bool {
+        return neg == ((s.find(value) == string::npos) || (whole && s != value));
+      }, i[field]));
 
-        buffer_t ret;
-        ret.reserve(buf.size());
+    buffer_t ret;
+    ret.reserve(buf.size());
 
-        size_t n = 0;
-        for(auto &&s : buf) {
-          if(futs.at(n).get())
-            ret.emplace_back(std::move(s));
-          ++n;
-        }
-
-        ret.shrink_to_fit();
-        return ret;
-      }
+    size_t n = 0;
+    for(auto &&s : buf) {
+      if(futs.at(n).get())
+        ret.emplace_back(std::move(s));
+      ++n;
     }
+
+    ret.shrink_to_fit();
+    return ret;
   }
 
   auto table::filter(const size_t field, const std::string& value, const bool whole, const bool neg) -> context {
-    return context(*this, intern::buffer_filter(data(), field, value, whole, neg));
+    return context(*this, buffer_filter(data(), field, value, whole, neg));
   }
 
   auto table::filter(const std::string& field, const std::string& value, const bool whole, const bool neg) -> context {
@@ -73,7 +69,7 @@ namespace zsdatab {
   }
 
   auto table::filter(const size_t field, const std::string& value, const bool whole, const bool neg) const -> const_context {
-    return const_context(*this, intern::buffer_filter(data(), field, value, whole, neg));
+    return const_context(*this, buffer_filter(data(), field, value, whole, neg));
   }
 
   auto table::filter(const std::string& field, const std::string& value, const bool whole, const bool neg) const -> const_context {

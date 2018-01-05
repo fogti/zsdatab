@@ -1,8 +1,8 @@
 /*************************************************
- *       header: zsdatab::intern::permanent_table_common
+ *       header: zsdatab::intern::*table*_common
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.6
+ *      version: 0.2.8
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -34,24 +34,35 @@
 # include "zsdatable.hpp"
 namespace zsdatab {
   namespace intern {
-    class permanent_table_common : public table_interface {
+    class table_impl_common : public table_interface {
+     public:
+      table_impl_common() = default;
+      explicit table_impl_common(const metadata &o);
+      table_impl_common(const metadata &m, const buffer_t &n);
+      virtual ~table_impl_common() noexcept = default;
+
+      auto get_metadata() const noexcept -> const metadata&;
+      auto data() const noexcept -> const buffer_t&;
+      void data(const buffer_t &n);
+
+     protected:
+      metadata _meta;
+      buffer_t _data;
+    };
+
+    class permanent_table_common : public table_impl_common {
      public:
       permanent_table_common();
       permanent_table_common(const std::string &name);
       ~permanent_table_common();
 
       bool good() const noexcept;
-
-      auto get_metadata() const noexcept -> const metadata&;
-      auto data() const noexcept -> const buffer_t&;
+      using table_impl_common::data;
       void data(const buffer_t &n);
-
       auto clone() const -> std::shared_ptr<table_interface>;
 
      protected:
       bool _valid, _modified;
-      metadata _meta;
-      buffer_t _data;
       std::string _path;
     };
   }

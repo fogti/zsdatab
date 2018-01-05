@@ -2,7 +2,7 @@
  *        class: zsdatab::table
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.6
+ *      version: 0.2.8
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -94,31 +94,11 @@ namespace zsdatab {
       }
     };
 
-    class in_memory_table final : public table_interface {
-      const metadata _meta;
-      buffer_t _data;
-
-     public:
-      explicit in_memory_table(const metadata &o):
-        _meta(o) { }
-
-      in_memory_table(const metadata &o, const buffer_t &n):
-        _meta(o), _data(n) { }
+    struct in_memory_table final : public table_impl_common {
+      using table_impl_common::table_impl_common;
 
       bool good() const noexcept {
         return _meta.good();
-      }
-
-      auto get_metadata() const noexcept -> const metadata& {
-        return _meta;
-      }
-
-      auto data() const noexcept -> const buffer_t& {
-        return _data;
-      }
-
-      void data(const buffer_t &n) {
-        _data = n;
       }
 
       auto clone() const -> std::shared_ptr<table_interface> {

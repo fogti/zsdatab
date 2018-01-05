@@ -20,7 +20,7 @@ include_directories(include lib lib/3rdparty/gzstream ${ZLIB_INCLUDE_DIRS})
 #          because we use file globbing
 file(GLOB_RECURSE LibSources lib/*.cxx lib/*.C)
 add_library(zsdatable SHARED ${LibSources} include/zsdatable.hpp)
-set_target_properties(zsdatable PROPERTIES VERSION "9.0.0" SOVERSION 9)
+set_target_properties(zsdatable PROPERTIES VERSION "10.0.0" SOVERSION 10)
 target_link_libraries(zsdatable ZLIB::ZLIB ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(zsdatab-entry entry.cxx)

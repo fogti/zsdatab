@@ -2,7 +2,7 @@
  *        class: zsdatab::intern::permanent_table_common
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.6
+ *      version: 0.2.8
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -40,6 +40,24 @@ using namespace std;
 
 namespace zsdatab {
   namespace intern {
+    table_impl_common::table_impl_common(const metadata &o)
+      : _meta(o) { }
+
+    table_impl_common::table_impl_common(const metadata &m, const buffer_t &n)
+      : _meta(m), _data(n) { }
+
+    auto table_impl_common::get_metadata() const noexcept -> const metadata& {
+      return _meta;
+    }
+
+    auto table_impl_common::data() const noexcept -> const buffer_t& {
+      return _data;
+    }
+
+    void table_impl_common::data(const buffer_t &n) {
+      _data = n;
+    }
+
     permanent_table_common::permanent_table_common()
       : _valid(false), _modified(false) { }
 
@@ -76,14 +94,6 @@ namespace zsdatab {
 
     bool permanent_table_common::good() const noexcept {
       return _valid;
-    }
-
-    auto permanent_table_common::get_metadata() const noexcept -> const metadata& {
-      return _meta;
-    }
-
-    auto permanent_table_common::data() const noexcept -> const buffer_t& {
-      return _data;
     }
 
     void permanent_table_common::data(const buffer_t &n) {
