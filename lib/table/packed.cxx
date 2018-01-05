@@ -1,18 +1,18 @@
-/*************************************************
+/***********************************************************
  *         part: extra table implementations (packed tables)
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.6
- **************| *********************************
+ *      version: 0.2.8
+ **************| *******************************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
- **************| *********************************
+ **************| *******************************************
  * organisation: Ytrizja
  *     org unit: Zscheile IT
  *     location: Chemnitz, Saxony
- *************************************************
+ ***********************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -28,19 +28,36 @@
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- *************************************************/
+ ***********************************************************/
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <fstream>
+#include <iostream>
+
+#include <gzstream.h>
 #include "table/packed.hpp"
 
 namespace zsdatab {
   using namespace std;
+  using namespace intern;
 
   bool create_packed_table(const std::string &_path, const metadata &_meta) {
-    return intern::create_packed_table_common<ofstream>(_path, _meta);
+    return create_packed_table_common<ofstream>(_path, _meta);
   }
 
   table make_packed_table(const std::string &_path) {
-    return intern::make_packed_table_common<ifstream, ofstream>(_path);
+    return make_packed_table_common<ifstream, ofstream>(_path);
+  }
+
+  using namespace GZSTREAM_NAMESPACE;
+
+  bool create_gzipped_table(const string &_path, const metadata &_meta) {
+    return create_packed_table_common<ogzstream>(_path, _meta);
+  }
+
+  table make_gzipped_table(const string &_path) {
+    return make_packed_table_common<igzstream, ogzstream>(_path);
   }
 }
