@@ -32,8 +32,10 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sched.h>
 #include <unistd.h>
 
+#include <iostream>
 #include "table/common.hpp"
 
 using namespace std;
@@ -64,17 +66,19 @@ namespace zsdatab {
     permanent_table_common::permanent_table_common(const string &name)
       : permanent_table_common()
     {
-      string host;
+      _path = name + ".#";
+
       {
         char tmp[65];
         gethostname(tmp, 64);
         tmp[64] = 0;
-        host = tmp;
+        _path += tmp;
       }
 
-      _path = name + ".#" + host + '.' + to_string(getpid());
+      _path += '.' + to_string(getpid());
 
       struct stat st;
+      bool fi = true;
       while(
                 !::link(name.c_str(), _path.c_str())
              && (
@@ -83,8 +87,13 @@ namespace zsdatab {
                 )
            ) {
         ::unlink(_path.c_str());
-        sleep(1);
+        if(fi)
+          cerr << "libzsdatable.so: WARNING: waiting for table lock on '" << name << "' ";
+        fi = false;
+        cerr << '.';
+        sched_yield();
       }
+      if(!fi) cerr << '\n';
     }
 
     permanent_table_common::~permanent_table_common() {
