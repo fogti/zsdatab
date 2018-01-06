@@ -2,7 +2,7 @@
  *        class: zsdatab::table::filter
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.8
+ *      version: 0.2.9
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -30,7 +30,8 @@
  *
  *************************************************/
 
-#include <future>
+#include <ThreadPool.h>
+#include <thread>
 #include <zsdatable.hpp>
 using namespace std;
 
@@ -38,11 +39,15 @@ namespace zsdatab {
   static buffer_t buffer_filter(const buffer_t &buf, const size_t field, const string& value, const bool whole, const bool neg) {
     if(buf.empty()) return {};
 
+    // create a ThreadPool just for this operation
+    // so that we don't interference with other thread pools
+    // and don't need complex thread pool register functions
+    ThreadPool pool(thread::hardware_concurrency());
     vector<future<bool>> futs;
     futs.reserve(buf.size());
 
     for(const auto &i : buf)
-      futs.emplace_back(async([&value, whole, neg](const auto &s) -> bool {
+      futs.emplace_back(pool.enqueue([&value, whole, neg](const auto &s) {
         return neg == ((s.find(value) == string::npos) || (whole && s != value));
       }, i[field]));
 

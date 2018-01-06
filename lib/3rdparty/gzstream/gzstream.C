@@ -1,6 +1,7 @@
 // ============================================================================
 // gzstream, C++ iostream classes wrapping the zlib compression library.
 // Copyright (C) 2001  Deepak Bandyopadhyay, Lutz Kettner
+// Copyright (C) 2018  Erik Zscheile
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -18,9 +19,9 @@
 // ============================================================================
 //
 // File          : gzstream.C
-// Revision      : $Revision: 1.7 $
-// Revision_date : $Date: 2003/01/08 14:41:27 $
-// Author(s)     : Deepak Bandyopadhyay, Lutz Kettner
+// Revision      : $Revision: 1.7.1 $
+// Revision_date : $Date: 2018/01/05 23:59:00 $
+// Author(s)     : Deepak Bandyopadhyay, Lutz Kettner, Erik Zscheile
 // 
 // Standard streambuf implementation following Nicolai Josuttis, "The 
 // Standard C++ Library".
