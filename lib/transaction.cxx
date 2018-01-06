@@ -59,7 +59,7 @@ namespace zsdatab {
       struct append final : action {
         void apply(context_common &ctx) const { ctx += line;                       }
         action_name get_name() const noexcept { return action_name::APPEND;        }
-        vector<string> line;
+        row_t line;
       };
 
       struct clear final : action {
@@ -128,7 +128,7 @@ namespace zsdatab {
 
   // actions
 
-  transaction& transaction::operator+=(const vector<string> &line) {
+  transaction& transaction::operator+=(const row_t &line) {
     if(line.size() != _meta.get_field_count())
       throw length_error(__PRETTY_FUNCTION__);
 
