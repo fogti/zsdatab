@@ -14,13 +14,13 @@ find_package(Threads REQUIRED)
 
 configure_file(FindZsdatable.cmake.in "${PROJECT_BINARY_DIR}/FindZsdatable.cmake" @ONLY)
 
-include_directories(include lib lib/3rdparty/gzstream ${ZLIB_INCLUDE_DIRS})
+include_directories(3rdparty/ThreadPool include lib lib/3rdparty/gzstream ${ZLIB_INCLUDE_DIRS})
 
 # WARNING: you must re-run cmake every time a file under lib/ is added
 #          because we use file globbing
 file(GLOB_RECURSE LibSources lib/*.cxx lib/*.C)
 add_library(zsdatable SHARED ${LibSources} include/zsdatable.hpp)
-set_target_properties(zsdatable PROPERTIES VERSION "10.0.0" SOVERSION 10)
+set_target_properties(zsdatable PROPERTIES VERSION "10.1.0" SOVERSION 10)
 target_link_libraries(zsdatable ZLIB::ZLIB ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(zsdatab-entry entry.cxx)
