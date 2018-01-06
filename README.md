@@ -160,3 +160,28 @@ ctx.replace_part("a", "from", "to");
 // put the context data into the table
 ctx.push();
 ```
+
+### fixcol proxy
+
+```zsdatab::intern::fixcol_proxy``` is a column proxy to edit a column as a whole
+(as replacement to the context set_field, append_part, remove_part, replace_part methods).
+
+```cpp
+// assuming ctx is a zsdatab::context
+auto xcol = ctx.column("a");
+
+// set all fields in this column
+xcol.set("new value");
+
+// append to all ...
+xcol.append("appended");
+
+// remove from all ...
+xcol.remove("appended");
+
+// search-replace
+xcol.replace("from", "to");
+
+// get all contents
+std::vector<std::string> coldat = xcol.get();
+```
