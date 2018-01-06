@@ -1,7 +1,7 @@
 /*************************************************
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.8
+ *      version: 0.2.9
  **************| ********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -42,8 +42,8 @@
 # include <experimental/propagate_const>
 
 namespace zsdatab {
-  // typedefs
-  typedef std::vector<std::vector<std::string>> buffer_t;
+  typedef std::vector<std::string> row_t;
+  typedef std::vector<row_t> buffer_t;
 
   namespace intern {
     // type for "pointers to implementation"
@@ -82,14 +82,14 @@ namespace zsdatab {
     ~metadata() noexcept;
 
     auto operator=(const metadata &o) -> metadata&;
-    auto operator+=(const std::vector<std::string> &o) -> metadata&;
+    auto operator+=(const row_t &o) -> metadata&;
 
     void swap(metadata &o) noexcept;
 
     bool good() const noexcept;
     bool empty() const noexcept;
 
-    auto get_cols() const noexcept -> const std::vector<std::string>&;
+    auto get_cols() const noexcept -> const row_t&;
     auto get_field_count() const -> size_t;
     bool has_field(const std::string &colname) const noexcept;
     auto get_field_nr(const std::string &colname) const -> size_t;
@@ -100,8 +100,8 @@ namespace zsdatab {
     void separator(const char sep) noexcept;
     char separator() const noexcept;
 
-    auto deserialize(const std::string &line) const -> std::vector<std::string>;
-    auto serialize(const std::vector<std::string> &line) const -> std::string;
+    auto deserialize(const std::string &line) const -> row_t;
+    auto serialize(const row_t &line) const -> std::string;
   };
 
   bool operator==(const metadata &a, const metadata &b);
@@ -210,7 +210,7 @@ namespace zsdatab {
       auto operator=(const buffer_interface &o) -> context_common&;
       auto operator=(context_common &&o) -> context_common&;
       auto operator+=(const buffer_interface &o) -> context_common&;
-      auto operator+=(const std::vector<std::string> &line) -> context_common&;
+      auto operator+=(const row_t &line) -> context_common&;
 
       context_common& pull();
 
@@ -334,7 +334,7 @@ namespace zsdatab {
 
     void apply(intern::context_common &ctx) const;
 
-    transaction& operator+=(const std::vector<std::string> &line);
+    transaction& operator+=(const row_t &line);
 
     // select
     transaction& clear();

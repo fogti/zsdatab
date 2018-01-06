@@ -62,7 +62,7 @@ namespace zsdatab {
     context_common& context_common::sort() {
       const size_t colcnt = get_metadata().get_field_count();
       std::sort(_buffer.begin(), _buffer.end(),
-        [colcnt](const vector<string> &a, const vector<string> &b) {
+        [colcnt](const row_t &a, const row_t &b) {
           for(size_t i = 0; i < colcnt; ++i) {
             if(a[i] < b[i]) return true;
             else if(a[i] > b[i]) break;
@@ -97,7 +97,7 @@ namespace zsdatab {
 
         using namespace std;
         _buffer.erase(
-          remove_if(_buffer.begin(), _buffer.end(), [&oldbuf](const vector<string> &arg) -> bool {
+          remove_if(_buffer.begin(), _buffer.end(), [&oldbuf](const row_t &arg) -> bool {
             return find(oldbuf.begin(), oldbuf.end(), arg) != oldbuf.end(); // assuming no overflow
           }),
           _buffer.end());
@@ -112,7 +112,7 @@ namespace zsdatab {
       using namespace std;
       _buffer.erase(
         remove_if(_buffer.begin(), _buffer.end(),
-          [field, &value, whole, neg](const vector<string> &s) noexcept -> bool {
+          [field, &value, whole, neg](const row_t &s) noexcept -> bool {
             return neg != ((s[field].find(value) == string::npos) || (whole && s[field] != value)); // assuming no overflow
           }
         ),

@@ -37,63 +37,63 @@
 
 using namespace std;
 
-static auto deserialize_line(const string &line, const char my_sep) -> vector<string> {
-  vector<string> ret;
-  string col;
-  istringstream ss(line);
-  while(getline(ss, col, my_sep)) {
-    bool escape = false;
-    string col2;
-    for(auto &&c : col) {
-      if(escape) {
-        escape = false;
-        switch(c) {
-          case '-': c = 0; break;
-          case 'd': c = my_sep; break;
-          case 'n': c = '\n'; break;
-        }
-        if(c) col2 += c;
-      } else {
-        // default mode
-        if(c == '\\') escape = true;
-        else col2 += c;
-      }
-    }
-    ret.emplace_back(move(col2));
-  }
-  return ret;
-}
-
-static auto serialize_line(const vector<string> &cols, const char my_sep) -> string {
-  string ret;
-  bool fi = true;
-
-  for(auto &&i : cols) {
-    if(!fi) ret += my_sep;
-    fi = false;
-
-    if(i.empty()) {
-      ret += "\\-";
-      continue;
-    }
-
-    for(auto &&c : i)
-      switch(c) {
-        case '\\': ret += "\\\\"; break;
-        case '\n': ret += "\\n"; break;
-        default:
-          if(c == my_sep) ret += "\\d";
-          else ret += c;
-      }
-  }
-
-  return ret;
-}
-
 namespace zsdatab {
+  static auto deserialize_line(const string &line, const char my_sep) {
+    row_t ret;
+    string col;
+    istringstream ss(line);
+    while(getline(ss, col, my_sep)) {
+      bool escape = false;
+      string col2;
+      for(auto &&c : col) {
+        if(escape) {
+          escape = false;
+          switch(c) {
+            case '-': c = 0; break;
+            case 'd': c = my_sep; break;
+            case 'n': c = '\n'; break;
+          }
+          if(c) col2 += c;
+        } else {
+          // default mode
+          if(c == '\\') escape = true;
+          else col2 += c;
+        }
+      }
+      ret.emplace_back(move(col2));
+    }
+    return ret;
+  }
+
+  static auto serialize_line(const row_t &cols, const char my_sep) {
+    string ret;
+    bool fi = true;
+
+    for(auto &&i : cols) {
+      if(!fi) ret += my_sep;
+      fi = false;
+
+      if(i.empty()) {
+        ret += "\\-";
+        continue;
+      }
+
+      for(auto &&c : i)
+        switch(c) {
+          case '\\': ret += "\\\\"; break;
+          case '\n': ret += "\\n"; break;
+          default:
+            if(c == my_sep) ret += "\\d";
+            else ret += c;
+        }
+    }
+
+    return ret;
+  }
+
   class metadata::impl final {
    public:
-    vector<string> cols;
+    row_t cols;
     char sep;
 
     impl(): sep(' ') { }
@@ -120,7 +120,7 @@ namespace zsdatab {
     return *this;
   }
 
-  metadata& metadata::operator+=(const vector<string> &o) {
+  metadata& metadata::operator+=(const row_t &o) {
     _d->cols.insert(_d->cols.end(), o.begin(), o.end());
     return *this;
   }
@@ -133,7 +133,7 @@ namespace zsdatab {
     return !empty();
   }
 
-  auto metadata::get_cols() const noexcept -> const vector<string>& {
+  auto metadata::get_cols() const noexcept -> const row_t& {
     return _d->cols;
   }
 
@@ -178,13 +178,13 @@ namespace zsdatab {
     return _d->sep;
   }
 
-  auto metadata::deserialize(const string &line) const -> vector<string> {
+  auto metadata::deserialize(const string &line) const -> row_t {
     auto ret = deserialize_line(line, _d->sep);
     ret.resize(_d->cols.size());
     return ret;
   }
 
-  auto metadata::serialize(const vector<string> &line) const -> string {
+  auto metadata::serialize(const row_t &line) const -> string {
     if(line.size() != _d->cols.size())
       throw length_error(__PRETTY_FUNCTION__);
     return serialize_line(line, _d->sep);

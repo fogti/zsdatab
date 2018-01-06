@@ -19,7 +19,7 @@ include_directories(3rdparty/ThreadPool include lib lib/3rdparty/gzstream ${ZLIB
 # WARNING: you must re-run cmake every time a file under lib/ is added
 #          because we use file globbing
 file(GLOB_RECURSE LibSources lib/*.cxx lib/*.C)
-add_library(zsdatable SHARED ${LibSources} include/zsdatable.hpp)
+add_library(zsdatable SHARED include/zsdatable.hpp ${LibSources})
 set_target_properties(zsdatable PROPERTIES VERSION "10.1.0" SOVERSION 10)
 target_link_libraries(zsdatable ZLIB::ZLIB ${CMAKE_THREAD_LIBS_INIT})
 

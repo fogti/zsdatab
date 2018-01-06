@@ -68,7 +68,7 @@ namespace zsdatab {
       return *this;
     }
 
-    context_common& context_common::operator+=(const vector<string> &line) {
+    context_common& context_common::operator+=(const row_t &line) {
       if(line.size() != get_metadata().get_field_count())
         throw length_error(__PRETTY_FUNCTION__);
       _buffer.push_back(line);
