@@ -36,74 +36,81 @@
 using namespace std;
 
 namespace zsdatab {
-namespace intern {
-  fixcol_proxy_common::fixcol_proxy_common(const size_t nr)
-    : _nr(nr) { }
+  namespace intern {
+    fixcol_proxy_common::fixcol_proxy_common(const size_t nr)
+      : _nr(nr) { }
 
-  auto fixcol_proxy_common::get(const bool _uniq) const -> vector<string> {
-    vector<string> ret;
-    ret.reserve(_underlying_data().size());
-    for(const auto &i : _underlying_data())
-      ret.emplace_back(i[_nr]);
+    fixcol_proxy_common::fixcol_proxy_common(const buffer_interface &uplink, const string &field)
+      : _nr(uplink.get_metadata().get_field_nr(field)) { }
 
-    if(_uniq && !ret.empty()) {
-      auto ie = ret.end();
-      sort(ret.begin(), ie);
-      ret.erase(unique(ret.begin(), ie), ie);
-    }
+    auto fixcol_proxy_common::get(const bool _uniq) const -> vector<string> {
+      vector<string> ret;
+      ret.reserve(_underlying_data().size());
+      for(const auto &i : _underlying_data())
+        ret.emplace_back(i[_nr]);
 
-    return ret;
-  }
-
-  fixcol_proxy::fixcol_proxy(context_common &uplink, const size_t nr)
-    : fixcol_proxy_common(_nr), _uplink(uplink) { }
-
-  fixcol_proxy::fixcol_proxy(context_common &uplink, const string field)
-    : fixcol_proxy(uplink, uplink.get_metadata().get_field_nr(field)) { }
-
-  auto fixcol_proxy::_underlying_data() const -> const buffer_t& {
-    return _uplink.data();
-  }
-
-  const_fixcol_proxy::const_fixcol_proxy(const buffer_interface &uplink, const size_t nr)
-    : fixcol_proxy_common(_nr), _uplink(uplink) { }
-
-  const_fixcol_proxy::const_fixcol_proxy(const buffer_interface &uplink, const string field)
-    : const_fixcol_proxy(uplink, uplink.get_metadata().get_field_nr(field)) { }
-
-  const_fixcol_proxy::const_fixcol_proxy(const fixcol_proxy &o)
-    : const_fixcol_proxy(o._uplink, o._nr) { }
-
-  auto const_fixcol_proxy::_underlying_data() const -> const buffer_t& {
-    return _uplink.data();
-  }
-
-  // change
-
-  void fixcol_proxy::set(const string &value) {
-    for(auto &l : _uplink._buffer) l[_nr] = value;
-  }
-
-  void fixcol_proxy::append(const string &value) {
-    for(auto &l : _uplink._buffer) l[_nr] += value;
-  }
-
-  void fixcol_proxy::remove(const string &value) {
-    for(auto &l : _uplink._buffer) {
-      const auto pos = l[_nr].find(value);
-      if(pos != string::npos) l[_nr].erase(pos, value.length());
-    }
-  }
-
-  void fixcol_proxy::replace(const string& from, const string& to) {
-    if(from.empty()) return;
-    for(auto &l : _uplink._buffer) {
-      size_t sp = 0;
-      while((sp = l[_nr].find(from, sp)) != string::npos) {
-        l[_nr].replace(sp, from.length(), to);
-        sp += to.length();
+      if(_uniq && !ret.empty()) {
+        auto ie = ret.end();
+        sort(ret.begin(), ie);
+        ret.erase(unique(ret.begin(), ie), ie);
       }
+
+      return ret;
+    }
+
+    fixcol_proxy::fixcol_proxy(context_common &uplink, const size_t nr)
+      : fixcol_proxy_common(nr), _uplink(uplink) { }
+
+    fixcol_proxy::fixcol_proxy(context_common &uplink, const string &field)
+      : fixcol_proxy_common(uplink, field), _uplink(uplink) { }
+
+    auto fixcol_proxy::_underlying_data() const -> const buffer_t& {
+      return _uplink.data();
+    }
+
+    const_fixcol_proxy::const_fixcol_proxy(const buffer_interface &uplink, const size_t nr)
+      : fixcol_proxy_common(nr), _uplink(uplink) { }
+
+    const_fixcol_proxy::const_fixcol_proxy(const buffer_interface &uplink, const string &field)
+      : fixcol_proxy_common(uplink, field), _uplink(uplink) { }
+
+    const_fixcol_proxy::const_fixcol_proxy(const fixcol_proxy &o)
+      : const_fixcol_proxy(o._uplink, o._nr) { }
+
+    auto const_fixcol_proxy::_underlying_data() const -> const buffer_t& {
+      return _uplink.data();
+    }
+
+    // change
+
+    fixcol_proxy& fixcol_proxy::set(const string &value) {
+      for(auto &l : _uplink._buffer) l[_nr] = value;
+      return *this;
+    }
+
+    fixcol_proxy& fixcol_proxy::append(const string &value) {
+      for(auto &l : _uplink._buffer) l[_nr] += value;
+      return *this;
+    }
+
+    fixcol_proxy& fixcol_proxy::remove(const string &value) {
+      for(auto &l : _uplink._buffer) {
+        const auto pos = l[_nr].find(value);
+        if(pos != string::npos) l[_nr].erase(pos, value.length());
+      }
+      return *this;
+    }
+
+    fixcol_proxy& fixcol_proxy::replace(const string& from, const string& to) {
+      if(from.empty()) return *this;
+      for(auto &l : _uplink._buffer) {
+        size_t sp = 0;
+        while((sp = l[_nr].find(from, sp)) != string::npos) {
+          l[_nr].replace(sp, from.length(), to);
+          sp += to.length();
+        }
+      }
+      return *this;
     }
   }
-}
 }

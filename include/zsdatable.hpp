@@ -198,7 +198,8 @@ namespace zsdatab {
 
     class fixcol_proxy_common {
      public:
-      fixcol_proxy_common(const size_t nr);
+      explicit fixcol_proxy_common(const size_t nr);
+      fixcol_proxy_common(const buffer_interface &uplink, const std::string &field);
 
       // report
       auto get(const bool _uniq = false) const -> std::vector<std::string>;
@@ -218,13 +219,13 @@ namespace zsdatab {
 
      public:
       fixcol_proxy(context_common &uplink, const size_t nr);
-      fixcol_proxy(context_common &uplink, const std::string field);
+      fixcol_proxy(context_common &uplink, const std::string &field);
 
       // change
-      void set(const std::string &value);
-      void append(const std::string &value);
-      void remove(const std::string &value);
-      void replace(const std::string &from, const std::string &to);
+      fixcol_proxy& set(const std::string &value);
+      fixcol_proxy& append(const std::string &value);
+      fixcol_proxy& remove(const std::string &value);
+      fixcol_proxy& replace(const std::string &from, const std::string &to);
 
      protected:
       auto _underlying_data() const -> const buffer_t&;
@@ -235,7 +236,7 @@ namespace zsdatab {
 
      public:
       const_fixcol_proxy(const buffer_interface &uplink, const size_t nr);
-      const_fixcol_proxy(const buffer_interface &uplink, const std::string field);
+      const_fixcol_proxy(const buffer_interface &uplink, const std::string &field);
       const_fixcol_proxy(const fixcol_proxy &o);
 
      protected:
