@@ -2,7 +2,7 @@
  *         part: table joining
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.8
+ *      version: 0.2.9
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -34,12 +34,13 @@
 #include "zsdatable.hpp"
 
 zsdatab::table zsdatab::inner_join(const char sep, const buffer_interface &a, const buffer_interface &b) {
-  struct column_join {
-    size_t a, b, c;
-  };
-
   enum column_join_from_where {
     FROM_COMMON, FROM_A, FROM_B
+  };
+
+  struct column_join {
+    column_join_from_where src;
+    size_t a, b;
   };
 
   const metadata &ma = a.get_metadata();
@@ -48,77 +49,61 @@ zsdatab::table zsdatab::inner_join(const char sep, const buffer_interface &a, co
 
   using namespace std;
   // compute column names
-  unordered_map<string, column_join> merge_cols;
-  unordered_map<string, column_join_from_where> join_cols;
+  unordered_map<string, column_join> join_cols;
   {
-    vector<string> cols = ma.get_cols();
+    const auto &mac = ma.get_cols();
+    vector<string> cols = mac, merge_cols;
     for(auto &&i : mb.get_cols()) {
-      if(find(cols.begin(), cols.end(), i) != cols.end())
-        merge_cols[i] = { 0, 0, 0 };
-      else
-        cols.push_back(i);
+      ((find(mac.begin(), mac.end(), i) != mac.end())
+        ? &merge_cols : &cols)->emplace_back(move(i));
     }
     mt += cols;
 
-    for(auto &&i : cols) {
+    for(const auto &i : cols) {
+      auto &se = join_cols[i];
+      bool na = true, nb = true;
 #define CJFW(V) column_join_from_where::FROM_##V
-      join_cols[i] = (
-        (merge_cols.find(i) != merge_cols.end())
-        ? CJFW(COMMON)
-        : (ma.has_field(i) ? CJFW(A) : CJFW(B))
-      );
+      if(find(merge_cols.begin(), merge_cols.end(), i) != merge_cols.end()) {
+        se.src = CJFW(COMMON);
+      } else if(ma.has_field(i)) {
+        se.src = CJFW(A);
+        nb = false;
+      } else {
+        se.src = CJFW(B);
+        na = false;
+      }
 #undef CJFW
+      se.a = na ? ma.get_field_nr(i) : 0;
+      se.b = nb ? mb.get_field_nr(i) : 0;
     }
-  }
-
-  for(auto &i : merge_cols) {
-    auto &fi = i.first;
-    auto &se = i.second;
-    se.a = ma.get_field_nr(fi);
-    se.b = mb.get_field_nr(fi);
-    se.c = mt.get_field_nr(fi);
   }
 
   // compute table
   vector<vector<string>> table_data;
 
-  for(auto &&x : a.data()) {
-    for(auto &&y : b.data()) {
+  for(const auto &x : a.data())
+    for(const auto &y : b.data()) {
       vector<string> line(mt.get_field_count());
-      {
-        bool match = true;
-        for(auto &&col : merge_cols) {
-          const string &value = x[col.second.a];
-          if(value == y[col.second.b]) {
-            line[col.second.c] = value;
-          } else {
-            match = false;
-            break;
-          }
-        }
-        if(!match) continue;
-      }
+      bool match = true;
 
       for(size_t i = 0; i < line.size(); ++i) {
         auto &l = line[i];
-        if(!l.empty()) continue;
+        const auto &se = join_cols[mt.get_field_name(i)];
 
-        const auto colname = mt.get_field_name(i);
-        switch(join_cols[colname]) {
+        switch(se.src) {
           case column_join_from_where::FROM_A:
-            l = x[ma.get_field_nr(colname)];
-            break;
+            l = x[se.a]; break;
 
           case column_join_from_where::FROM_B:
-            l = y[mb.get_field_nr(colname)];
-            break;
+            l = y[se.b];
 
-          default: break;
+          default: match = (l == y[se.a]);
         }
+
+        if(!match) break;
       }
-      table_data.push_back(line);
+      if(match) table_data.emplace_back(move(line));
     }
-  }
 
   return table(mt, table_data);
 }

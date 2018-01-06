@@ -47,7 +47,7 @@ namespace zsdatab {
     futs.reserve(buf.size());
 
     for(const auto &i : buf)
-      futs.emplace_back(pool.enqueue([&value, whole, neg](const auto &s) {
+      futs.emplace_back(pool.enqueue([&value, whole, neg](const auto &s) noexcept {
         return neg == ((s.find(value) == string::npos) || (whole && s != value));
       }, i[field]));
 

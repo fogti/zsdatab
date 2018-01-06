@@ -20,7 +20,7 @@ include_directories(3rdparty/ThreadPool include lib lib/3rdparty/gzstream ${ZLIB
 #          because we use file globbing
 file(GLOB_RECURSE LibSources lib/*.cxx lib/*.C)
 add_library(zsdatable SHARED include/zsdatable.hpp ${LibSources})
-set_target_properties(zsdatable PROPERTIES VERSION "10.1.0" SOVERSION 10)
+set_target_properties(zsdatable PROPERTIES VERSION "10.2.0" SOVERSION 10)
 target_link_libraries(zsdatable ZLIB::ZLIB ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(zsdatab-entry entry.cxx)

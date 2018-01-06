@@ -62,7 +62,7 @@ namespace zsdatab {
     context_common& context_common::sort() {
       const size_t colcnt = get_metadata().get_field_count();
       std::sort(_buffer.begin(), _buffer.end(),
-        [colcnt](const row_t &a, const row_t &b) {
+        [colcnt](const row_t &a, const row_t &b) noexcept {
           for(size_t i = 0; i < colcnt; ++i) {
             if(a[i] < b[i]) return true;
             else if(a[i] > b[i]) break;
@@ -97,7 +97,7 @@ namespace zsdatab {
 
         using namespace std;
         _buffer.erase(
-          remove_if(_buffer.begin(), _buffer.end(), [&oldbuf](const row_t &arg) -> bool {
+          remove_if(_buffer.begin(), _buffer.end(), [&oldbuf](const row_t &arg) noexcept {
             return find(oldbuf.begin(), oldbuf.end(), arg) != oldbuf.end(); // assuming no overflow
           }),
           _buffer.end());
@@ -112,7 +112,7 @@ namespace zsdatab {
       using namespace std;
       _buffer.erase(
         remove_if(_buffer.begin(), _buffer.end(),
-          [field, &value, whole, neg](const row_t &s) noexcept -> bool {
+          [field, &value, whole, neg](const row_t &s) noexcept {
             return neg != ((s[field].find(value) == string::npos) || (whole && s[field] != value)); // assuming no overflow
           }
         ),
@@ -144,10 +144,10 @@ namespace zsdatab {
       if(from.empty()) return *this;
 
       for(auto &l : _buffer) {
-        size_t start_pos = 0;
-        while((start_pos = l[field].find(from, start_pos)) != string::npos) {
-          l[field].replace(start_pos, from.length(), to);
-          start_pos += to.length();
+        size_t sp = 0;
+        while((sp = l[field].find(from, sp)) != string::npos) {
+          l[field].replace(sp, from.length(), to);
+          sp += to.length();
         }
       }
 
@@ -161,7 +161,7 @@ namespace zsdatab {
       for(const auto &i : _buffer)
         ret.emplace_back(i[field]);
 
-      if(!ret.empty() && _uniq) {
+      if(_uniq && !ret.empty()) {
         auto ie = ret.end();
         std::sort(ret.begin(), ie);
         ret.erase(std::unique(ret.begin(), ie), ie);
