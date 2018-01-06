@@ -122,52 +122,32 @@ namespace zsdatab {
     }
 
     context_common& context_common::set_field(const size_t field, const string& value) {
-      for(auto &l : _buffer) l[field] = value;
+      get_fixcol_proxy(field).set(value);
       return *this;
     }
 
     context_common& context_common::append_part(const size_t field, const string& value) {
-      for(auto &l : _buffer) l[field] += value;
+      get_fixcol_proxy(field).append(value);
       return *this;
     }
 
     context_common& context_common::remove_part(const size_t field, const string& value) {
-      for(auto &l : _buffer) {
-        const auto pos = l[field].find(value);
-        if(pos != string::npos) l[field].erase(pos, value.length());
-      }
-
+      get_fixcol_proxy(field).remove(value);
       return *this;
     }
 
     context_common& context_common::replace_part(const size_t field, const string& from, const string& to) {
-      if(from.empty()) return *this;
-
-      for(auto &l : _buffer) {
-        size_t sp = 0;
-        while((sp = l[field].find(from, sp)) != string::npos) {
-          l[field].replace(sp, from.length(), to);
-          sp += to.length();
-        }
-      }
-
+      get_fixcol_proxy(field).replace(from, to);
       return *this;
     }
 
     // report
     vector<string> context_common::get_column_data(const size_t field, const bool _uniq) const {
-      vector<string> ret;
-      ret.reserve(_buffer.size());
-      for(const auto &i : _buffer)
-        ret.emplace_back(i[field]);
+      return const_fixcol_proxy(*this, field).get(_uniq);
+    }
 
-      if(_uniq && !ret.empty()) {
-        auto ie = ret.end();
-        std::sort(ret.begin(), ie);
-        ret.erase(std::unique(ret.begin(), ie), ie);
-      }
-
-      return ret;
+    fixcol_proxy context_common::get_fixcol_proxy(const size_t field) {
+      return fixcol_proxy(*this, field);
     }
   }
 }

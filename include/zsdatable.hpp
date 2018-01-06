@@ -196,8 +196,56 @@ namespace zsdatab {
     // throws if not compatible
     void op_table_compat_chk(const table& a, const table& b);
 
-    // abstract base class for contexts
+    class fixcol_proxy_common {
+     public:
+      fixcol_proxy_common(const size_t nr);
+
+      // report
+      auto get(const bool _uniq = false) const -> std::vector<std::string>;
+
+     protected:
+      const size_t _nr;
+
+      virtual auto _underlying_data() const -> const buffer_t& = 0;
+    };
+
+    class context_common;
+    class const_fixcol_proxy;
+
+    class fixcol_proxy final : public fixcol_proxy_common {
+      friend class const_fixcol_proxy;
+      context_common &_uplink;
+
+     public:
+      fixcol_proxy(context_common &uplink, const size_t nr);
+      fixcol_proxy(context_common &uplink, const std::string field);
+
+      // change
+      void set(const std::string &value);
+      void append(const std::string &value);
+      void remove(const std::string &value);
+      void replace(const std::string &from, const std::string &to);
+
+     protected:
+      auto _underlying_data() const -> const buffer_t&;
+    };
+
+    class const_fixcol_proxy final : public fixcol_proxy_common {
+      const buffer_interface &_uplink;
+
+     public:
+      const_fixcol_proxy(const buffer_interface &uplink, const size_t nr);
+      const_fixcol_proxy(const buffer_interface &uplink, const std::string field);
+      const_fixcol_proxy(const fixcol_proxy &o);
+
+     protected:
+      auto _underlying_data() const -> const buffer_t&;
+    };
+
+    // base class for contexts
     class context_common : public buffer_interface {
+      friend class fixcol_proxy;
+
      public:
       context_common(const buffer_interface &bif);
       context_common(const buffer_t &o);
@@ -213,6 +261,9 @@ namespace zsdatab {
       auto operator+=(const row_t &line) -> context_common&;
 
       context_common& pull();
+
+      auto column(const std::string field) -> fixcol_proxy;
+      auto column(const std::string field) const -> const_fixcol_proxy;
 
       // select
       context_common& clear() noexcept;
@@ -247,6 +298,8 @@ namespace zsdatab {
 
      protected:
       buffer_t _buffer;
+
+      fixcol_proxy get_fixcol_proxy(const size_t field);
     };
 
     bool operator==(const context_common &a, const context_common &b) noexcept;

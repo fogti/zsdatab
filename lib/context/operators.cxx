@@ -75,6 +75,14 @@ namespace zsdatab {
       return *this;
     }
 
+    auto context_common::column(const std::string field) -> fixcol_proxy {
+      return fixcol_proxy(*this, field);
+    }
+
+    auto context_common::column(const std::string field) const -> const_fixcol_proxy {
+      return const_fixcol_proxy(*this, field);
+    }
+
     bool operator==(const context_common &a, const context_common &b) noexcept {
       return (&a.get_metadata() == &b.get_metadata()) && (a.data() == b.data());
     }
