@@ -45,7 +45,6 @@ namespace GZSTREAM_NAMESPACE {
 // ----------------------------------------------------------------------------
 
 class gzstreambuf : public std::streambuf {
- private:
   static const int bufferSize = 47+256;    // size of data buff
   // totals 512 bytes under g++ for igzstream at the end.
 
@@ -75,6 +74,8 @@ class gzstreambuf : public std::streambuf {
 };
 
 class gzstreambase : virtual public std::ios {
+  void seterr();
+
  protected:
   gzstreambuf buf;
 

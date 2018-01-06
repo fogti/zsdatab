@@ -50,7 +50,7 @@ gzstreambuf* gzstreambuf::open(const char* name, int open_mode) {
   if((mode & std::ios::ate) || (mode & std::ios::app)
     || ((mode & std::ios::in) && (mode & std::ios::out)))
     return 0;
-  char  fmode[10];
+  char  fmode[5];
   char* fmodeptr = fmode;
   if(mode & std::ios::in)
     *fmodeptr++ = 'r';
@@ -86,7 +86,7 @@ int gzstreambuf::underflow() { // used for input buffer only
     n_putback = 4;
   memcpy(buffer + (4 - n_putback), gptr() - n_putback, n_putback);
 
-  int num = gzread(file, buffer+4, bufferSize-4);
+  const int num = gzread(file, buffer+4, bufferSize-4);
   if(num <= 0) // ERROR or EOF
     return EOF;
 
@@ -125,9 +125,8 @@ int gzstreambuf::sync() {
   // Changed to use flush_buffer() instead of overflow(EOF)
   // which caused improper behavior with std::endl and flush(),
   // bug reported by Vincent Ricard.
-  if(pptr() && pptr() > pbase() && flush_buffer() == EOF)
-    return -1;
-  return 0;
+  return (pptr() && pptr() > pbase() && flush_buffer() == EOF)
+    ? -1 : 0;
 }
 
 // --------------------------------------
@@ -143,14 +142,16 @@ gzstreambase::~gzstreambase() {
   buf.close();
 }
 
+void gzstreambase::seterr() {
+  clear(rdstate() | std::ios::badbit);
+}
+
 void gzstreambase::open(const char* name, int open_mode) {
-  if(!buf.open(name, open_mode))
-    clear(rdstate() | std::ios::badbit);
+  if(!buf.open(name, open_mode)) seterr();
 }
 
 void gzstreambase::close() {
-  if(buf.is_open() && !buf.close())
-    clear(rdstate() | std::ios::badbit);
+  if(buf.is_open() && !buf.close()) seterr();
 }
 
 #ifdef GZSTREAM_NAMESPACE
