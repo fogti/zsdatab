@@ -2,7 +2,7 @@
  *       header: zsdatab::intern::packed_table_common
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.8
+ *      version: 0.2.9
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -46,7 +46,7 @@ namespace zsdatab {
 
           table tmpt(_meta);
           in >> tmpt;
-          data(tmpt.data());
+          _data = tmpt.data();
         }
       }
 

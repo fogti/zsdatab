@@ -2,7 +2,7 @@
  *        class: zsdatab::intern::context_common
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.8
+ *      version: 0.2.9
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -97,7 +97,7 @@ namespace zsdatab {
 
         using namespace std;
         _buffer.erase(
-          remove_if(_buffer.begin(), _buffer.end(), [oldbuf](const vector<string> &arg) -> bool {
+          remove_if(_buffer.begin(), _buffer.end(), [&oldbuf](const vector<string> &arg) -> bool {
             return find(oldbuf.begin(), oldbuf.end(), arg) != oldbuf.end(); // assuming no overflow
           }),
           _buffer.end());
@@ -112,9 +112,8 @@ namespace zsdatab {
       using namespace std;
       _buffer.erase(
         remove_if(_buffer.begin(), _buffer.end(),
-          [field, value, whole, neg](const vector<string> &s) noexcept -> bool {
-            const bool res = (s[field].find(value) == string::npos) || (whole && s[field] != value); // assuming no overflow
-            return neg != res;
+          [field, &value, whole, neg](const vector<string> &s) noexcept -> bool {
+            return neg != ((s[field].find(value) == string::npos) || (whole && s[field] != value)); // assuming no overflow
           }
         ),
         _buffer.end());
