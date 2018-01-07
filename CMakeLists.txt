@@ -6,12 +6,16 @@ set(INSTALL_LIB_DIR "lib${LIB_SUFFIX}" CACHE PATH "Installation directory for li
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
 set(INSTALL_CMAKE_DIR share/cmake/Modules CACHE PATH "Installation directory for CMake module files")
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(ZLIB REQUIRED)
 find_package(Threads REQUIRED)
 
+include(CheckIncludeFiles)
+check_include_file_cxx("execution" HAVE_CXXH_EXECUTION)
+
+configure_file(config.h.in "${PROJECT_BINARY_DIR}/config.h")
 configure_file(FindZsdatable.cmake.in "${PROJECT_BINARY_DIR}/FindZsdatable.cmake" @ONLY)
 
 include_directories(3rdparty/ThreadPool include lib lib/3rdparty/gzstream ${ZLIB_INCLUDE_DIRS})

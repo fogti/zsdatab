@@ -7,6 +7,7 @@
 
 include(CMakeFindDependencyMacro)
 find_dependency(ZLIB)
+find_dependency(Threads)
 
 find_path(Zsdatable_INCLUDE_DIR
   NAMES zsdatable.hpp
@@ -20,9 +21,9 @@ find_library(Zsdatable_LIBRARY
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Zsdatable DEFAULT_MSG
-                                  Zsdatable_LIBRARY ZLIB_LIBRARIES Zsdatable_INCLUDE_DIR)
+                                  Zsdatable_LIBRARY ZLIB_LIBRARIES CMAKE_THREAD_LIBS_INIT Zsdatable_INCLUDE_DIR)
 
 mark_as_advanced(Zsdatable_INCLUDE_DIR Zsdatable_LIBRARY)
 
 set(Zsdatable_INCLUDE_DIRS ${Zsdatable_INCLUDE_DIR})
-set(Zsdatable_LIBRARIES ${Zsdatable_LIBRARY} ${ZLIB_LIBRARIES})
+set(Zsdatable_LIBRARIES ${Zsdatable_LIBRARY} ${ZLIB_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})

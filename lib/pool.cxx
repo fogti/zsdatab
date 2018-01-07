@@ -30,13 +30,14 @@
  *
  *************************************************/
 
-#include <ThreadPool.h>
-#include <zsdatable.hpp>
+#include <config.h>
 
-using namespace std;
+#ifndef HAVE_CXXH_EXECUTION
+#include <ThreadPool.h>
 
 namespace zsdatab {
   namespace intern {
-    ThreadPool threadpool(thread::hardware_concurrency());
+    ThreadPool threadpool(std::thread::hardware_concurrency());
   }
 }
+#endif

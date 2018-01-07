@@ -32,32 +32,53 @@
 
 #include <ThreadPool.h>
 #include <zsdatable.hpp>
+
+#define ZSDAM_PAR
+#include <config.h>
+
+#ifdef HAVE_CXXH_EXECUTION
+# include <algorithm>
+# include <iterator>
+#endif
+
 using namespace std;
 
 namespace zsdatab {
+#ifndef HAVE_CXXH_EXECUTION
   namespace intern {
     extern ThreadPool threadpool;
   }
+#endif
 
   static buffer_t buffer_filter(const buffer_t &buf, const size_t field, const string& value, const bool whole, const bool neg) {
+    static const auto chklambda = [&value, whole, neg](const auto &s) noexcept {
+      return neg == ((s.find(value) == string::npos) || (whole && s != value));
+    };
+
     if(buf.empty()) return {};
 
+#ifndef HAVE_CXXH_EXECUTION
     vector<future<bool>> futs;
     futs.reserve(buf.size());
 
     for(const auto &i : buf)
-      futs.emplace_back(intern::threadpool.enqueue([&value, whole, neg](const auto &s) noexcept {
-        return neg == ((s.find(value) == string::npos) || (whole && s != value));
-      }, i[field]));
+      futs.emplace_back(intern::threadpool.enqueue(chklambda, i[field]));
+#endif
 
     buffer_t ret;
     ret.reserve(buf.size());
 
+#ifdef HAVE_CXXH_EXECUTION
+    copy_if(ZSDAM_PAR buf.begin(), buf.end(), back_inserter(ret), [chklambda, field](const auto &s) noexcept {
+      return chklambda(s[field]);
+    });
+#else
     size_t n = 0;
     for(auto &s : futs) {
       if(s.get()) ret.emplace_back(buf.at(n));
       ++n;
     }
+#endif
 
     ret.shrink_to_fit();
     return ret;

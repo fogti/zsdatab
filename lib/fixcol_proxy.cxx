@@ -33,6 +33,9 @@
 #include <algorithm>
 #include "zsdatable.hpp"
 
+#define ZSDAM_PAR
+#include "config.h"
+
 using namespace std;
 
 namespace zsdatab {
@@ -51,8 +54,8 @@ namespace zsdatab {
 
       if(_uniq && !ret.empty()) {
         auto ie = ret.end();
-        sort(ret.begin(), ie);
-        ret.erase(unique(ret.begin(), ie), ie);
+        sort(ZSDAM_PAR ret.begin(), ie);
+        ret.erase(unique(ZSDAM_PAR ret.begin(), ie), ie);
       }
 
       return ret;
@@ -103,13 +106,14 @@ namespace zsdatab {
 
     fixcol_proxy& fixcol_proxy::replace(const string& from, const string& to) {
       if(from.empty()) return *this;
-      for(auto &l : _uplink._buffer) {
+
+      for_each(ZSDAM_PAR _uplink._buffer.begin(), _uplink._buffer.end(), [this, &from, &to](auto &l) noexcept {
         size_t sp = 0;
         while((sp = l[_nr].find(from, sp)) != string::npos) {
           l[_nr].replace(sp, from.length(), to);
           sp += to.length();
         }
-      }
+      });
       return *this;
     }
   }
