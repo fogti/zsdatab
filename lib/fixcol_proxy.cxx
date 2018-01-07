@@ -2,7 +2,6 @@
  *        class: zsdatab::intern::*fixcol_proxy*
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.9
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com

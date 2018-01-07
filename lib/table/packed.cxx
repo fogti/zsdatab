@@ -2,7 +2,6 @@
  *         part: extra table implementations (packed tables)
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.8
  **************| *******************************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com

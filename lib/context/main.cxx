@@ -2,7 +2,6 @@
  *        class: zsdatab::context
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.8
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com

@@ -2,7 +2,6 @@
  *       header: zsdatab::intern::packed_table_common
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.9
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
