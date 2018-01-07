@@ -14,6 +14,7 @@ find_package(Threads REQUIRED)
 
 include(CheckIncludeFiles)
 check_include_file_cxx("execution" HAVE_CXXH_EXECUTION)
+check_include_file_cxx("experimental/algorithm" HAVE_CXXH_EX_ALGORITHM)
 
 configure_file(include/config.h.in "${PROJECT_BINARY_DIR}/config.h")
 configure_file(FindZsdatable.cmake.in "${PROJECT_BINARY_DIR}/FindZsdatable.cmake" @ONLY)
