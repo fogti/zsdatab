@@ -15,10 +15,10 @@ find_package(Threads REQUIRED)
 include(CheckIncludeFiles)
 check_include_file_cxx("execution" HAVE_CXXH_EXECUTION)
 
-configure_file(config.h.in "${PROJECT_BINARY_DIR}/config.h")
+configure_file(include/config.h.in "${PROJECT_BINARY_DIR}/config.h")
 configure_file(FindZsdatable.cmake.in "${PROJECT_BINARY_DIR}/FindZsdatable.cmake" @ONLY)
 
-include_directories(3rdparty/ThreadPool include lib lib/3rdparty/gzstream ${ZLIB_INCLUDE_DIRS})
+include_directories("${PROJECT_BINARY_DIR}" 3rdparty/ThreadPool include lib lib/3rdparty/gzstream ${ZLIB_INCLUDE_DIRS})
 
 # WARNING: you must re-run cmake every time a file under lib/ is added
 #          because we use file globbing

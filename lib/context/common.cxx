@@ -34,7 +34,7 @@
 #include <stdexcept>
 #include "zsdatable.hpp"
 
-#define ZSDAM_PAR
+#define ZSDA_PAR
 #include "config.h"
 
 using namespace std;

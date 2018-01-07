@@ -33,7 +33,7 @@
 #include <algorithm>
 #include "zsdatable.hpp"
 
-#define ZSDAM_PAR
+#define ZSDA_PAR
 #include "config.h"
 
 using namespace std;
@@ -107,7 +107,7 @@ namespace zsdatab {
     fixcol_proxy& fixcol_proxy::replace(const string& from, const string& to) {
       if(from.empty()) return *this;
 
-      for_each(ZSDAM_PAR _uplink._buffer.begin(), _uplink._buffer.end(), [this, &from, &to](auto &l) noexcept {
+      for_each(ZSDAC_PAR _uplink._buffer.begin(), _uplink._buffer.end(), [this, &from, &to](auto &l) noexcept {
         size_t sp = 0;
         while((sp = l[_nr].find(from, sp)) != string::npos) {
           l[_nr].replace(sp, from.length(), to);

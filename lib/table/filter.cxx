@@ -33,7 +33,7 @@
 #include <ThreadPool.h>
 #include <zsdatable.hpp>
 
-#define ZSDAM_PAR
+#define ZSDA_PAR
 #include <config.h>
 
 #ifdef HAVE_CXXH_EXECUTION
