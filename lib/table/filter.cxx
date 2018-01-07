@@ -64,15 +64,15 @@ namespace zsdatab {
   }
 
   auto table::filter(const size_t field, const std::string& value, const bool whole, const bool neg) -> context {
-    return context(*this, buffer_filter(data(), field, value, whole, neg));
+    return {*this, buffer_filter(data(), field, value, whole, neg)};
+  }
+
+  auto table::filter(const size_t field, const std::string& value, const bool whole, const bool neg) const -> const_context {
+    return {*this, buffer_filter(data(), field, value, whole, neg)};
   }
 
   auto table::filter(const std::string& field, const std::string& value, const bool whole, const bool neg) -> context {
     return filter(get_metadata().get_field_nr(field), value, whole, neg);
-  }
-
-  auto table::filter(const size_t field, const std::string& value, const bool whole, const bool neg) const -> const_context {
-    return const_context(*this, buffer_filter(data(), field, value, whole, neg));
   }
 
   auto table::filter(const std::string& field, const std::string& value, const bool whole, const bool neg) const -> const_context {
