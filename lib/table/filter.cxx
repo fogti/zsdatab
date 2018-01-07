@@ -50,7 +50,9 @@ namespace zsdatab {
 #endif
 
   static buffer_t buffer_filter(const buffer_t &buf, const size_t field, const string& value, const bool whole, const bool neg) {
-    static const auto chklambda = [&value, whole, neg](const auto &s) noexcept {
+    // IMPORTANT NOTE: breaks if chklambda is declared static
+    const auto chklambda = [field, &value, whole, neg](const row_t &i) noexcept {
+      const auto &s = i[field];
       return neg == ((s.find(value) == string::npos) || (whole && s != value));
     };
 
@@ -61,16 +63,14 @@ namespace zsdatab {
     futs.reserve(buf.size());
 
     for(const auto &i : buf)
-      futs.emplace_back(intern::threadpool.enqueue(chklambda, i[field]));
+      futs.emplace_back(intern::threadpool.enqueue(chklambda, i));
 #endif
 
     buffer_t ret;
     ret.reserve(buf.size());
 
 #ifdef HAVE_CXXH_EXECUTION
-    copy_if(ZSDAM_PAR buf.begin(), buf.end(), back_inserter(ret), [chklambda, field](const auto &s) noexcept {
-      return chklambda(s[field]);
-    });
+    copy_if(ZSDAM_PAR buf.begin(), buf.end(), back_inserter(ret), chklambda);
 #else
     size_t n = 0;
     for(auto &s : futs) {
