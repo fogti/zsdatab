@@ -119,34 +119,5 @@ namespace zsdatab {
 
       return *this;
     }
-
-    context_common& context_common::set_field(const size_t field, const string& value) {
-      get_fixcol_proxy(field).set(value);
-      return *this;
-    }
-
-    context_common& context_common::append_part(const size_t field, const string& value) {
-      get_fixcol_proxy(field).append(value);
-      return *this;
-    }
-
-    context_common& context_common::remove_part(const size_t field, const string& value) {
-      get_fixcol_proxy(field).remove(value);
-      return *this;
-    }
-
-    context_common& context_common::replace_part(const size_t field, const string& from, const string& to) {
-      get_fixcol_proxy(field).replace(from, to);
-      return *this;
-    }
-
-    // report
-    vector<string> context_common::get_column_data(const size_t field, const bool _uniq) const {
-      return const_fixcol_proxy(*this, field).get(_uniq);
-    }
-
-    fixcol_proxy context_common::get_fixcol_proxy(const size_t field) {
-      return fixcol_proxy(*this, field);
-    }
   }
 }

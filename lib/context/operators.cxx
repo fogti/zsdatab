@@ -2,7 +2,7 @@
  *        class: zsdatab::intern::context_common (operators)
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.8
+ *      version: 0.2.9
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -76,11 +76,11 @@ namespace zsdatab {
     }
 
     auto context_common::column(const std::string field) -> fixcol_proxy {
-      return fixcol_proxy(*this, field);
+      return {*this, field};
     }
 
     auto context_common::column(const std::string field) const -> const_fixcol_proxy {
-      return const_fixcol_proxy(*this, field);
+      return {*this, field};
     }
 
     bool operator==(const context_common &a, const context_common &b) noexcept {
@@ -93,8 +93,8 @@ namespace zsdatab {
 
     ostream& operator<<(ostream& stream, const context_common &ctx) {
       if(!stream) return stream;
-      const auto m = ctx.get_metadata();
-      for(auto &&l : ctx.data())
+      auto &m = ctx.get_metadata();
+      for(auto &l : ctx.data())
         stream << m.serialize(l) << '\n';
       return stream;
     }

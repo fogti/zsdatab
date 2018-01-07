@@ -1,5 +1,5 @@
 /*************************************************
- *        class: zsdatab::table::filter
+ *       object: zsdatab::intern::threadpool
  *      library: zsdatable
  *      package: zsdatab
  *      version: 0.2.9
@@ -32,50 +32,11 @@
 
 #include <ThreadPool.h>
 #include <zsdatable.hpp>
+
 using namespace std;
 
 namespace zsdatab {
   namespace intern {
-    extern ThreadPool threadpool;
-  }
-
-  static buffer_t buffer_filter(const buffer_t &buf, const size_t field, const string& value, const bool whole, const bool neg) {
-    if(buf.empty()) return {};
-
-    vector<future<bool>> futs;
-    futs.reserve(buf.size());
-
-    for(const auto &i : buf)
-      futs.emplace_back(intern::threadpool.enqueue([&value, whole, neg](const auto &s) noexcept {
-        return neg == ((s.find(value) == string::npos) || (whole && s != value));
-      }, i[field]));
-
-    buffer_t ret;
-    ret.reserve(buf.size());
-
-    size_t n = 0;
-    for(auto &s : futs) {
-      if(s.get()) ret.emplace_back(buf.at(n));
-      ++n;
-    }
-
-    ret.shrink_to_fit();
-    return ret;
-  }
-
-  auto table::filter(const size_t field, const std::string& value, const bool whole, const bool neg) -> context {
-    return {*this, buffer_filter(data(), field, value, whole, neg)};
-  }
-
-  auto table::filter(const size_t field, const std::string& value, const bool whole, const bool neg) const -> const_context {
-    return {*this, buffer_filter(data(), field, value, whole, neg)};
-  }
-
-  auto table::filter(const std::string& field, const std::string& value, const bool whole, const bool neg) -> context {
-    return filter(get_metadata().get_field_nr(field), value, whole, neg);
-  }
-
-  auto table::filter(const std::string& field, const std::string& value, const bool whole, const bool neg) const -> const_context {
-    return filter(get_metadata().get_field_nr(field), value, whole, neg);
+    ThreadPool threadpool(thread::hardware_concurrency());
   }
 }

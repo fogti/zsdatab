@@ -2,7 +2,7 @@
  *        class: zsdatab::intern::context_common
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.8
+ *      version: 0.2.9
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -47,16 +47,36 @@ namespace zsdatab {
       return filter(get_field_nr(field), value, whole, neg);
     }
 
+    context_common& context_common::set_field(const size_t field, const string& value) {
+      get_fixcol_proxy(field).set(value);
+      return *this;
+    }
+
     context_common& context_common::set_field(const string& field, const string& value) {
       return set_field(get_field_nr(field), value);
+    }
+
+    context_common& context_common::append_part(const size_t field, const string& value) {
+      get_fixcol_proxy(field).append(value);
+      return *this;
     }
 
     context_common& context_common::append_part(const string& field, const string& value) {
       return append_part(get_field_nr(field), value);
     }
 
+    context_common& context_common::remove_part(const size_t field, const string& value) {
+      get_fixcol_proxy(field).remove(value);
+      return *this;
+    }
+
     context_common& context_common::remove_part(const string& field, const string& value) {
       return remove_part(get_field_nr(field), value);
+    }
+
+    context_common& context_common::replace_part(const size_t field, const string& from, const string& to) {
+      get_fixcol_proxy(field).replace(from, to);
+      return *this;
     }
 
     context_common& context_common::replace_part(const string& field, const string& from, const string& to) {
@@ -78,6 +98,14 @@ namespace zsdatab {
 
     auto context_common::get_field_nr(const string &colname) const -> size_t {
       return get_metadata().get_field_nr(colname);
+    }
+
+    vector<string> context_common::get_column_data(const size_t field, const bool _uniq) const {
+      return const_fixcol_proxy(*this, field).get(_uniq);
+    }
+
+    fixcol_proxy context_common::get_fixcol_proxy(const size_t field) {
+      return fixcol_proxy(*this, field);
     }
 
     auto context_common::data() const noexcept -> const buffer_t& {
