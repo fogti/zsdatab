@@ -2,7 +2,7 @@
  *        class: zsdatab::table
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.8
+ *      version: 0.2.9
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -30,14 +30,8 @@
  *
  *************************************************/
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
 #include <fstream>
 #include <iostream> // cerr
-#include <utility>
-
 #include <table/common.hpp>
 
 using namespace std;

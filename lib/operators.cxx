@@ -2,7 +2,7 @@
  *         part: operators
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.6
+ *      version: 0.2.9
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -36,6 +36,10 @@
 using namespace std;
 
 namespace zsdatab {
+  bool operator==(const metadata &a, const metadata &b) {
+    return a.get_cols().size() == b.get_cols().size();
+  }
+
   bool operator!=(const metadata &a, const metadata &b) {
     return !(a == b);
   }

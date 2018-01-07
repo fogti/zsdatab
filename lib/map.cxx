@@ -2,7 +2,7 @@
  *         part: table mapping
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.4
+ *      version: 0.2.9
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -12,7 +12,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2018 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -41,7 +41,7 @@ namespace zsdatab {
 
     for(auto &&i : mo.get_cols()) {
       const auto it = mappings.find(i);
-      mt += { (it != mappings.end() ? it->second : i) };
+      mt += { (it != mappings.end() ? it->second : move(i)) };
     }
 
     return table(mt, in.data());

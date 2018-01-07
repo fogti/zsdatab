@@ -19,8 +19,8 @@
 // ============================================================================
 //
 // File          : gzstream.C
-// Revision      : $Revision: 1.7.1 $
-// Revision_date : $Date: 2018/01/06 20:48:48 $
+// Revision      : $Revision: 1.7.2 $
+// Revision_date : $Date: 2018/01/07 02:37:18 $
 // Author(s)     : Deepak Bandyopadhyay, Lutz Kettner, Erik Zscheile
 //
 // Standard streambuf implementation following Nicolai Josuttis, "The 
@@ -28,7 +28,6 @@
 // ============================================================================
 
 #include <gzstream.h>
-#include <iostream>
 #include <string.h>  // for memcpy
 
 #ifdef GZSTREAM_NAMESPACE

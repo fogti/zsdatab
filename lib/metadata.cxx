@@ -2,7 +2,7 @@
  *        class: zsdatab::metadata
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.2.8
+ *      version: 0.2.9
  **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -188,10 +188,6 @@ namespace zsdatab {
     if(line.size() != _d->cols.size())
       throw length_error(__PRETTY_FUNCTION__);
     return serialize_line(line, _d->sep);
-  }
-
-  bool operator==(const metadata &a, const metadata &b) {
-    return a.get_cols().size() == b.get_cols().size();
   }
 
   auto operator<<(ostream &stream, const metadata::impl &meta) -> ostream& {
