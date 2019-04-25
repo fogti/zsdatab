@@ -94,6 +94,29 @@ namespace zsdatab {
     };
 
     table make_table_ref(const metadata &m, const buffer_t &n);
+
+    class table_data_ref final : public table_interface {
+      metadata _meta;
+      const buffer_t &_data;
+
+     public:
+      table_data_ref(metadata m, const buffer_t &n);
+      virtual ~table_data_ref() noexcept = default;
+
+      bool good() const noexcept
+        { return true; }
+      auto get_metadata() const noexcept -> const metadata&
+        { return _meta; }
+      auto data() const noexcept -> const buffer_t&
+        { return _data; }
+
+      // this function will always throw a logic_error
+      void data(const buffer_t &n);
+
+      auto clone() const -> std::shared_ptr<table_interface>;
+    };
+
+    table make_table_data_ref(metadata m, const buffer_t &n);
   }
 }
 #endif /* ZSDATAB_TABLE_COMMON_HPP */

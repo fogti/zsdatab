@@ -95,7 +95,7 @@ namespace zsdatab {
       : _meta(m), _data(n) { }
 
     void table_ref::data(const buffer_t &n) {
-      throw logic_error("zsdatab::intern::table_ref: data(x) is forbidden");
+      throw logic_error(__PRETTY_FUNCTION__);
     }
 
     auto table_ref::clone() const -> std::shared_ptr<table_interface> {
@@ -104,6 +104,26 @@ namespace zsdatab {
 
     table make_table_ref(const metadata &m, const buffer_t &n) {
       return table(make_shared<table_ref>(m, n));
+    }
+
+    table_data_ref::table_data_ref(metadata m, const buffer_t &n)
+      : _meta(move(m)), _data(n)
+    {
+      // check for matching column count
+      if(!n.empty() && _meta.get_field_count() != n.front().size())
+        throw invalid_argument(__PRETTY_FUNCTION__);
+    }
+
+    void table_data_ref::data(const buffer_t &n) {
+      throw logic_error(__PRETTY_FUNCTION__);
+    }
+
+    auto table_data_ref::clone() const -> std::shared_ptr<table_interface> {
+      return make_shared<table_data_ref>(_meta, _data);
+    }
+
+    table make_table_data_ref(metadata m, const buffer_t &n) {
+      return table(make_shared<table_data_ref>(move(m), n));
     }
   }
 }

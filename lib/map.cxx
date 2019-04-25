@@ -30,19 +30,21 @@
  *************************************************/
 
 #include "zsdatable.hpp"
+#include "table/common.hpp"
 
 namespace zsdatab {
   using namespace std;
 
-  table table_map_fields(const buffer_interface &in, const unordered_map<string, string>& mappings) {
+  table table_map_fields(const buffer_interface &in, unordered_map<string, string> mappings) {
     const auto &mo = in.get_metadata();
-    metadata mt(mo.separator());
+    row_t tmp;
+    tmp.reserve(mo.get_field_count());
 
-    for(auto &&i : mo.get_cols()) {
+    for(const auto &i : mo.get_cols()) {
       const auto it = mappings.find(i);
-      mt += { (it != mappings.end() ? it->second : move(i)) };
+      tmp.emplace_back(it != mappings.end() ? string(move(it->second)) : string(i));
     }
 
-    return table(mt, in.data());
+    return intern::make_table_data_ref(metadata(mo.separator(), move(tmp)), in.data());
   }
 }

@@ -75,14 +75,15 @@ namespace zsdatab {
 
    public:
     metadata();
-    metadata(const char sep);
+    metadata(const char sep, row_t cols = {});
     metadata(const metadata &o);
-    metadata(metadata &&o) = default;
+    metadata(metadata &&o);
 
     ~metadata() noexcept;
 
     auto operator=(const metadata &o) -> metadata&;
     auto operator+=(const row_t &o) -> metadata&;
+    auto operator+=(row_t &&o) -> metadata&;
 
     void swap(metadata &o) noexcept;
 
@@ -420,7 +421,7 @@ namespace zsdatab {
   table inner_join(const char sep, const buffer_interface &a, const buffer_interface &b);
 
   // table_map_fields - map field names (mappings: {from, to}) (e.g. for an following join)
-  table table_map_fields(const buffer_interface &in, const std::unordered_map<std::string, std::string>& mappings);
+  table table_map_fields(const buffer_interface &in, std::unordered_map<std::string, std::string> mappings);
 
   template<class T>
   void swap(intern::swapable<T> &a, intern::swapable<T> &b) { a.swap(b); }

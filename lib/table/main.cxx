@@ -102,14 +102,14 @@ namespace zsdatab {
 
   // for permanent tables
   table::table(const string &name)
-    : _t(new intern::permanent_table(name)) { }
+    : _t(make_shared<intern::permanent_table>(name)) { }
 
   // for in-memory tables
   table::table(const metadata &meta)
-    : _t(new intern::in_memory_table(meta)) { }
+    : _t(make_shared<intern::in_memory_table>(meta)) { }
 
   table::table(const metadata &meta, const buffer_t &n)
-    : _t(new intern::in_memory_table(meta, n)) { }
+    : _t(make_shared<intern::in_memory_table>(meta, n)) { }
 
   table::table(shared_ptr<table_interface> &&o)
     : _t(std::move(o)) { }

@@ -30,6 +30,7 @@
  *************************************************/
 
 #include <algorithm>
+#include <iterator>
 #include <stdexcept>
 #include <sstream>
 #include "zsdatable.hpp"
@@ -104,13 +105,17 @@ namespace zsdatab {
   };
 
   metadata::metadata()
-    : _d(new metadata::impl()) { }
+    : _d(make_unique<metadata::impl>()) { }
 
-  metadata::metadata(const char sep)
-    : metadata() { _d->sep = sep; }
+  metadata::metadata(const char sep, row_t cols)
+    : metadata()
+    { _d->sep = sep; _d->cols = move(cols); }
 
   metadata::metadata(const metadata &o)
-    : _d(new metadata::impl(*o._d)) { }
+    : _d(make_unique<metadata::impl>(*o._d)) { }
+
+  metadata::metadata(metadata &&o)
+    : _d(move(o._d)) { }
 
   metadata::~metadata() noexcept = default;
 
@@ -121,6 +126,13 @@ namespace zsdatab {
 
   metadata& metadata::operator+=(const row_t &o) {
     _d->cols.insert(_d->cols.end(), o.begin(), o.end());
+    return *this;
+  }
+
+  metadata& metadata::operator+=(row_t &&o) {
+    auto &cls = _d->cols;
+    cls.reserve(cls.size() + o.size());
+    cls.insert(cls.end(), make_move_iterator(o.begin()), make_move_iterator(o.end()));
     return *this;
   }
 
