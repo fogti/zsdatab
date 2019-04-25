@@ -51,7 +51,10 @@ static unsigned int xsel_gmatcht(const string &mat) {
 
 int main(int argc, char *argv[]) {
   if(argc < 2) {
-    cerr << "USAGE: zsdatab-entry TABLE [CMD ARGS... ]...\n"
+    cerr << "USAGE: zsdatab-entry [-z] TABLE [CMD ARGS... ]...\n"
+            "\n"
+            "Options:\n"
+            "  -z                                  TABLE is gzipped and packed instead of plain\n"
             "\n"
             "Commands:\n"
             "  select FIELD VALUE                  select all entries that match VALUE (deprecated)\n"
@@ -72,10 +75,10 @@ int main(int argc, char *argv[]) {
             "  push                                update table file\n"
             "\n"
             "Commands can be joined\n\n"
-            "zsdatab v0.2.8 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>\n"
+            "zsdatab v0.3.0 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>\n"
             "released under X11-License\n";
     return 1;
-  } else if(argc == 2) {
+  } else if(argc == 2 && string(argv[1]) != "-z") {
     string tmp;
     ifstream in(argv[1]);
     if(!in) {
@@ -86,7 +89,8 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  zsdatab::table my_table(argv[1]);
+  const bool is_gzipped = (string(argv[1]) == "-z");
+  zsdatab::table my_table = is_gzipped ? zsdatab::make_gzipped_table(argv[2]) : zsdatab::table(argv[1]);
   if(!my_table.good()) {
     cerr << "zsdatab-entry: ERROR: " << argv[1] << ": file not found / read failed\n";
     return 1;
@@ -94,7 +98,7 @@ int main(int argc, char *argv[]) {
   const size_t colcnt = my_table.get_metadata().get_field_count();
 
   zsdatab::context my_ctx(my_table);
-  deque<string> commands(argv + 2, argv + argc);
+  deque<string> commands(argv + 2 + (is_gzipped ? 1 : 0), argv + argc);
 
   string cmd, field;
 
