@@ -41,24 +41,6 @@ using namespace std;
 
 namespace zsdatab {
   namespace intern {
-    table_impl_common::table_impl_common(const metadata &o)
-      : _meta(o) { }
-
-    table_impl_common::table_impl_common(const metadata &m, const buffer_t &n)
-      : _meta(m), _data(n) { }
-
-    auto table_impl_common::get_metadata() const noexcept -> const metadata& {
-      return _meta;
-    }
-
-    auto table_impl_common::data() const noexcept -> const buffer_t& {
-      return _data;
-    }
-
-    void table_impl_common::data(const buffer_t &n) {
-      _data = n;
-    }
-
     permanent_table_common::permanent_table_common()
       : _valid(false), _modified(false) { }
 
@@ -100,10 +82,6 @@ namespace zsdatab {
         ::unlink(_path.c_str());
     }
 
-    bool permanent_table_common::good() const noexcept {
-      return _valid;
-    }
-
     void permanent_table_common::data(const buffer_t &n) {
       _modified = true;
       _data = n;
@@ -111,6 +89,21 @@ namespace zsdatab {
 
     auto permanent_table_common::clone() const -> std::shared_ptr<table_interface> {
       throw table_clone_error(__PRETTY_FUNCTION__);
+    }
+
+    table_ref::table_ref(const metadata &m, const buffer_t &n)
+      : _meta(m), _data(n) { }
+
+    void table_ref::data(const buffer_t &n) {
+      throw logic_error("zsdatab::intern::table_ref: data(x) is forbidden");
+    }
+
+    auto table_ref::clone() const -> std::shared_ptr<table_interface> {
+      return make_shared<table_ref>(_meta, _data);
+    }
+
+    table make_table_ref(const metadata &m, const buffer_t &n) {
+      return table(make_shared<table_ref>(m, n));
     }
   }
 }

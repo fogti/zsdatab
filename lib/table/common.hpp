@@ -36,13 +36,18 @@ namespace zsdatab {
     class table_impl_common : public table_interface {
      public:
       table_impl_common() = default;
-      explicit table_impl_common(const metadata &o);
-      table_impl_common(const metadata &m, const buffer_t &n);
+      explicit table_impl_common(const metadata &o)
+        : _meta(o) { }
+      table_impl_common(const metadata &m, const buffer_t &n)
+        : _meta(m), _data(n) { }
       virtual ~table_impl_common() noexcept = default;
 
-      auto get_metadata() const noexcept -> const metadata&;
-      auto data() const noexcept -> const buffer_t&;
-      void data(const buffer_t &n);
+      auto get_metadata() const noexcept -> const metadata&
+        { return _meta; }
+      auto data() const noexcept -> const buffer_t&
+        { return _data; }
+      void data(const buffer_t &n)
+        { _data = n; }
 
      protected:
       metadata _meta;
@@ -55,7 +60,9 @@ namespace zsdatab {
       permanent_table_common(const std::string &name);
       ~permanent_table_common();
 
-      bool good() const noexcept;
+      bool good() const noexcept
+        { return _valid; }
+
       using table_impl_common::data;
       void data(const buffer_t &n);
       auto clone() const -> std::shared_ptr<table_interface>;
@@ -64,6 +71,29 @@ namespace zsdatab {
       bool _valid, _modified;
       std::string _path;
     };
+
+    class table_ref final : public table_interface {
+      const metadata &_meta;
+      const buffer_t &_data;
+
+     public:
+      table_ref(const metadata &m, const buffer_t &n);
+      virtual ~table_ref() noexcept = default;
+
+      bool good() const noexcept
+        { return true; }
+      auto get_metadata() const noexcept -> const metadata&
+        { return _meta; }
+      auto data() const noexcept -> const buffer_t&
+        { return _data; }
+
+      // this function will always throw a logic_error
+      void data(const buffer_t &n);
+
+      auto clone() const -> std::shared_ptr<table_interface>;
+    };
+
+    table make_table_ref(const metadata &m, const buffer_t &n);
   }
 }
 #endif /* ZSDATAB_TABLE_COMMON_HPP */

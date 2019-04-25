@@ -1,3 +1,3 @@
-[submodule "3rdparty/ThreadPool"]
-	path = 3rdparty/ThreadPool
-	url = https://github.com/Adrian-Rosoga/ThreadPool
+[submodule "lib/3rdparty/ThreadPool"]
+	path = lib/3rdparty/ThreadPool
+	url = https://github.com/zserik/ThreadPool.git

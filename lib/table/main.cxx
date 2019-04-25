@@ -72,7 +72,7 @@ namespace zsdatab {
             if(!out)
               cerr << FETPF << "table open failed\n";
             else
-              out << table(_meta, data());
+              out << make_table_ref(_meta, data());
           } catch(const length_error &e) {
             cerr << FETPF << "corrupt table data\n"
                     "  failure detected in: " << e.what() << '\n';

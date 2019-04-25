@@ -1,17 +1,17 @@
-/***********************************************************
- *         part: extra table implementations (packed tables)
+/*************************************************
+ *       object: zsdatab::intern::threadpool
  *      library: zsdatable
  *      package: zsdatab
- **************| *******************************************
+ **************| *********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
- **************| *******************************************
+ **************| *********************************
  * organisation: Ytrizja
  *     org unit: Zscheile IT
  *     location: Chemnitz, Saxony
- ***********************************************************
+ *************************************************
  *
- * Copyright (c) 2018 Erik Kai Alain Zscheile
+ * Copyright (c) 2019 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -27,31 +27,16 @@
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
- ***********************************************************/
+ *************************************************/
 
-#include <fstream>
-#include "3rdparty/gzstream/gzstream.h"
-#include "table/packed.hpp"
+#include <config.h>
+
+#ifndef HAVE_CXXH_EXECUTION
+#include "3rdparty/ThreadPool/ThreadPool.hpp"
 
 namespace zsdatab {
-  using namespace std;
-  using namespace intern;
-
-  bool create_packed_table(const std::string &_path, const metadata &_meta) {
-    return create_packed_table_common<ofstream>(_path, _meta);
-  }
-
-  table make_packed_table(const std::string &_path) {
-    return make_packed_table_common<ifstream, ofstream>(_path);
-  }
-
-  using namespace GZSTREAM_NAMESPACE;
-
-  bool create_gzipped_table(const string &_path, const metadata &_meta) {
-    return create_packed_table_common<ogzstream>(_path, _meta);
-  }
-
-  table make_gzipped_table(const string &_path) {
-    return make_packed_table_common<igzstream, ogzstream>(_path);
+  namespace intern {
+    extern ThreadPool threadpool;
   }
 }
+#endif

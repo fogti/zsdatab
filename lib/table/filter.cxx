@@ -29,11 +29,11 @@
  *
  *************************************************/
 
-#include <ThreadPool.h>
 #include <zsdatable.hpp>
 
 #define ZSDA_PAR
 #include <config.h>
+#include "pool.hpp"
 
 #ifdef HAVE_CXXH_EXECUTION
 # include <algorithm>
@@ -43,12 +43,6 @@
 using namespace std;
 
 namespace zsdatab {
-#ifndef HAVE_CXXH_EXECUTION
-  namespace intern {
-    extern ThreadPool threadpool;
-  }
-#endif
-
   static buffer_t buffer_filter(const buffer_t &buf, const size_t field, const string& value, const bool whole, const bool neg) {
     // IMPORTANT NOTE: breaks if chklambda is declared static
     const auto chklambda = [field, &value, whole, neg](const row_t &i) noexcept {

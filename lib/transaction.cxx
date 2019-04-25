@@ -178,6 +178,7 @@ namespace zsdatab {
 
       case action_name::SORT:
         _actions.pop_back();
+        [[fallthrough]];
 
       default:
         _actions.emplace_back(new intern::ta::uniq);
@@ -194,6 +195,7 @@ namespace zsdatab {
       case action_name::SORT:
       case action_name::UNIQ:
         _actions.pop_back();
+        [[fallthrough]];
 
       default:
         _actions.emplace_back(new intern::ta::negate);
