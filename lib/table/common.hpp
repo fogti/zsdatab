@@ -71,23 +71,32 @@ namespace zsdatab {
       std::string _path;
     };
 
-    class table_ref final : public table_interface {
-      const metadata &_meta;
-      const buffer_t &_data;
-
+    class table_ref_common : public table_interface {
      public:
-      table_ref(const metadata &m, const buffer_t &n);
-      virtual ~table_ref() noexcept = default;
+      table_ref_common(const buffer_t &n): _data(n) { }
+      virtual ~table_ref_common() noexcept = default;
 
-      bool good() const noexcept
-        { return true; }
-      auto get_metadata() const noexcept -> const metadata&
-        { return _meta; }
+      bool good() const noexcept;
+
       auto data() const noexcept -> const buffer_t&
         { return _data; }
 
       // this function will always throw a logic_error
       void data(const buffer_t &n);
+
+     protected:
+      const buffer_t &_data;
+    };
+
+    class table_ref final : public table_ref_common {
+      const metadata &_meta;
+
+     public:
+      table_ref(const metadata &m, const buffer_t &n)
+        : table_ref_common(n), _meta(m) { }
+
+      auto get_metadata() const noexcept -> const metadata&
+        { return _meta; }
 
       auto clone() const -> std::shared_ptr<table_interface>;
     };
@@ -96,23 +105,17 @@ namespace zsdatab {
       return table(std::make_shared<table_ref>(m, n));
     }
 
-    class table_data_ref final : public table_interface {
+    class table_data_ref final : public table_ref_common {
       metadata _meta;
-      const buffer_t &_data;
 
      public:
-      table_data_ref(metadata m, const buffer_t &n);
+      table_data_ref(metadata m, const buffer_t &n)
+        : table_ref_common(n), _meta(std::move(m)) { }
+
       virtual ~table_data_ref() noexcept = default;
 
-      bool good() const noexcept
-        { return true; }
       auto get_metadata() const noexcept -> const metadata&
         { return _meta; }
-      auto data() const noexcept -> const buffer_t&
-        { return _data; }
-
-      // this function will always throw a logic_error
-      void data(const buffer_t &n);
 
       auto clone() const -> std::shared_ptr<table_interface>;
     };

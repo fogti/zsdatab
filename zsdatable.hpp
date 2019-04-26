@@ -204,13 +204,9 @@ namespace zsdatab {
   table make_gzipped_table(const std::string &_path);
 
   namespace intern {
-    // an internal checker for compatibility of tables
-    // throws if not compatible
-    void op_table_compat_chk(const table& a, const table& b);
-
     class fixcol_proxy_common {
      public:
-      explicit fixcol_proxy_common(const size_t nr);
+      explicit fixcol_proxy_common(const size_t nr) : _nr(nr) { }
       fixcol_proxy_common(const buffer_interface &uplink, const std::string &field);
 
       // report
@@ -252,7 +248,8 @@ namespace zsdatab {
       const_fixcol_proxy(const fixcol_proxy &o);
 
      protected:
-      auto _underlying_data() const -> const buffer_t&;
+      auto _underlying_data() const -> const buffer_t&
+        { return _uplink.data(); }
     };
 
     // base class for contexts

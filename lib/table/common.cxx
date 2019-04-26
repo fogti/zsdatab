@@ -92,27 +92,17 @@ namespace zsdatab {
       throw table_clone_error(__PRETTY_FUNCTION__);
     }
 
-    table_ref::table_ref(const metadata &m, const buffer_t &n)
-      : _meta(m), _data(n) { }
+    bool table_ref_common::good() const noexcept {
+      // check for matching column count
+      return (_data.empty() || get_metadata().get_field_count() == _data.front().size());
+    }
 
-    void table_ref::data(const buffer_t &n) {
+    void table_ref_common::data(const buffer_t &n) {
       throw logic_error(__PRETTY_FUNCTION__);
     }
 
     auto table_ref::clone() const -> std::shared_ptr<table_interface> {
       return make_shared<table_ref>(_meta, _data);
-    }
-
-    table_data_ref::table_data_ref(metadata m, const buffer_t &n)
-      : _meta(move(m)), _data(n)
-    {
-      // check for matching column count
-      if(!n.empty() && _meta.get_field_count() != n.front().size())
-        throw invalid_argument(__PRETTY_FUNCTION__);
-    }
-
-    void table_data_ref::data(const buffer_t &n) {
-      throw logic_error(__PRETTY_FUNCTION__);
     }
 
     auto table_data_ref::clone() const -> std::shared_ptr<table_interface> {

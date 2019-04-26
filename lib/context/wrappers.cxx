@@ -101,10 +101,15 @@ namespace zsdatab {
     }
 
     fixcol_proxy context_common::get_fixcol_proxy(const size_t field) {
-      return fixcol_proxy(*this, field);
+      return {*this, field};
     }
 
     // operators
+    static void op_table_compat_chk(const table& a, const table& b) {
+      if(a.get_metadata() != b.get_metadata())
+        throw invalid_argument(__PRETTY_FUNCTION__);
+    }
+
     context_common& context_common::operator=(const context_common &o) {
       return *this = static_cast<const buffer_interface&>(o);
     }
@@ -151,7 +156,10 @@ namespace zsdatab {
     }
 
     bool operator==(const context_common &a, const context_common &b) noexcept {
-      return (&a.get_metadata() == &b.get_metadata()) && (a.data() == b.data());
+      if(&a == &b) return true;
+      const auto &am = a.get_metadata(), &bm = b.get_metadata();
+      return (&am == &bm || am.get_cols() == bm.get_cols())
+          && (a.data() == b.data());
     }
 
     ostream& operator<<(ostream& stream, const context_common &ctx) {

@@ -34,17 +34,11 @@
 #include <config.h>
 
 #include <algorithm>
-#include <stdexcept>
 
 using namespace std;
 
 namespace zsdatab {
   namespace intern {
-    void op_table_compat_chk(const table& a, const table& b) {
-      if(a.get_metadata() != b.get_metadata())
-        throw invalid_argument(__PRETTY_FUNCTION__);
-    }
-
     context_common& context_common::pull() {
       _buffer = get_const_table().data();
       return *this;
