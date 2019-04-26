@@ -385,7 +385,10 @@ namespace zsdatab {
     context(context &&o) noexcept = default;
 
     // transfer
-    void push();
+    void push()
+      { _table.data(_buffer); }
+    void swap(context &o) noexcept
+      { _buffer.swap(o._buffer); }
 
     // rm = negate push
     // rmexcept = push

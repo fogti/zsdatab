@@ -32,7 +32,6 @@
 #include "zsdatable.hpp"
 #define ZSDA_PAR
 #include <config.h>
-
 #include <algorithm>
 
 using namespace std;
@@ -81,7 +80,6 @@ namespace zsdatab {
         const buffer_t oldbuf = _buffer;
         pull();
 
-        using namespace std;
         _buffer.erase(
           remove_if(ZSDAM_PAR _buffer.begin(), _buffer.end(), [&oldbuf](const row_t &arg) noexcept {
             return find(oldbuf.begin(), oldbuf.end(), arg) != oldbuf.end(); // assuming no overflow

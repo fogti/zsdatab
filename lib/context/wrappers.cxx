@@ -179,4 +179,8 @@ namespace zsdatab {
       return stream;
     }
   }
+
+  // dunno where to put this one
+  const_context::const_context(const context &o)
+    : context_base<const table>(o._table, o._buffer) { }
 }
