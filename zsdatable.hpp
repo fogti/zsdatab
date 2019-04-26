@@ -80,15 +80,19 @@ namespace zsdatab {
     auto operator+=(row_t &&o) -> metadata&;
 
     void swap(metadata &o) noexcept;
-
-    bool good() const noexcept;
-    bool empty() const noexcept;
-
     auto get_cols() const noexcept -> const row_t&;
-    auto get_field_count() const -> size_t;
+
+    bool empty() const noexcept
+      { return get_cols().empty(); }
+    auto get_field_count() const -> size_t
+      { return get_cols().size(); }
+    auto get_field_name(const size_t n) const -> std::string
+      { return get_cols().at(n); }
+    bool good() const noexcept
+      { return !empty(); }
+
     bool has_field(const std::string &colname) const noexcept;
     auto get_field_nr(const std::string &colname) const -> size_t;
-    auto get_field_name(const size_t n) const -> std::string;
     bool rename_field(const std::string &from, const std::string &to);
 
     // simple setters and getters

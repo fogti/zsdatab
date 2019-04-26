@@ -38,6 +38,7 @@
 using namespace std;
 
 namespace zsdatab {
+  [[gnu::hot]]
   static auto deserialize_line(const string &line, const char my_sep) {
     row_t ret;
     string col;
@@ -65,6 +66,7 @@ namespace zsdatab {
     return ret;
   }
 
+  [[gnu::hot]]
   static auto serialize_line(const row_t &cols, const char my_sep) {
     string ret;
     bool fi = true;
@@ -140,20 +142,8 @@ namespace zsdatab {
     std::swap(this->_d, o._d);
   }
 
-  bool metadata::good() const noexcept {
-    return !empty();
-  }
-
   auto metadata::get_cols() const noexcept -> const row_t& {
     return _d->cols;
-  }
-
-  bool metadata::empty() const noexcept {
-    return get_cols().empty();
-  }
-
-  auto metadata::get_field_count() const -> size_t {
-    return get_cols().size();
   }
 
   bool metadata::has_field(const string &colname) const noexcept {
@@ -161,16 +151,13 @@ namespace zsdatab {
     return find(cols.begin(), cols.end(), colname) != cols.end();
   }
 
+  [[gnu::hot]]
   auto metadata::get_field_nr(const string &colname) const -> size_t {
     const auto &cols = get_cols();
     const auto it = find(cols.begin(), cols.end(), colname);
     if(it == cols.end())
       throw out_of_range(__PRETTY_FUNCTION__);
     return static_cast<size_t>(distance(cols.begin(), it));
-  }
-
-  auto metadata::get_field_name(const size_t n) const -> string {
-    return get_cols().at(n);
   }
 
   bool metadata::rename_field(const string &from, const string &to) {
