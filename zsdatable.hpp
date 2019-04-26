@@ -389,10 +389,11 @@ namespace zsdatab {
 
   class transaction final {
    public:
-    transaction(const metadata &m);
+    transaction(metadata m);
     transaction(const transaction &o);
-    transaction(transaction &&o) = default;
+    transaction(transaction &&o) noexcept = default;
 
+    void swap(transaction &o) noexcept;
     void apply(intern::context_common &ctx) const;
 
     transaction& operator+=(const row_t &line);

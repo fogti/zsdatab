@@ -120,8 +120,12 @@ namespace zsdatab {
     }
   }
 
-  transaction::transaction(const metadata &m): _meta(m) { }
+  transaction::transaction(metadata m): _meta(move(m)) { }
   transaction::transaction(const transaction &o) = default;
+
+  void transaction::swap(transaction &o) noexcept {
+    _actions.swap(o._actions);
+  }
 
   void transaction::apply(intern::context_common &ctx) const {
     if(_meta != ctx.get_metadata())
