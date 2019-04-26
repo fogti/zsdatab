@@ -20,8 +20,6 @@ check_include_file_cxx("experimental/execution" HAVE_CXXH_EX_EXECUTION)
 check_include_file_cxx("experimental/algorithm" HAVE_CXXH_EX_ALGORITHM)
 
 configure_file(config.h.in "${PROJECT_BINARY_DIR}/config.h")
-configure_file("cmake/Find${CMAKE_PREFIX}.cmake.in" "${PROJECT_BINARY_DIR}/Find${CMAKE_PREFIX}.cmake" @ONLY)
-
 include_directories("${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}" lib ${ZLIB_INCLUDE_DIRS})
 
 function(src_compile_flags flag)
@@ -41,10 +39,11 @@ src_compile_flags("-frtti" lib/transaction.cxx)
 add_executable(zsdatab-entry entry.cxx)
 target_link_libraries(zsdatab-entry zsdatable)
 
+add_subdirectory(cmake)
+
 install(TARGETS zsdatable DESTINATION "${INSTALL_LIB_DIR}" EXPORT "${CMAKE_PREFIX}Targets")
 install(TARGETS zsdatab-entry DESTINATION "${INSTALL_BIN_DIR}")
 install(FILES zsdatable.hpp DESTINATION "${INSTALL_INCLUDE_DIR}")
-install(FILES "cmake/${CMAKE_PREFIX}Config.cmake" "${PROJECT_BINARY_DIR}/Find${CMAKE_PREFIX}.cmake" DESTINATION "${INSTALL_CMAKE_DIR}")
-install(EXPORT "${CMAKE_PREFIX}Targets" DESTINATION "${INSTALL_CMAKE_DIR}" NAMESPACE "${CMAKE_PREFIX}::" COMPONENT dev)
-
 install(FILES zsdatable DESTINATION "${INSTALL_BIN_DIR}" PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
+install(EXPORT "${CMAKE_PREFIX}Targets" DESTINATION "${INSTALL_CMAKE_DIR}" NAMESPACE "${CMAKE_PREFIX}::" COMPONENT dev)
