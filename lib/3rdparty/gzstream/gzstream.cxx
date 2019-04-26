@@ -18,19 +18,17 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // ============================================================================
 //
-// File          : gzstream.C
+// File          : gzstream.cxx
 // Author(s)     : Deepak Bandyopadhyay, Lutz Kettner, Erik Zscheile
 //
-// Standard streambuf implementation following Nicolai Josuttis, "The 
+// Standard streambuf implementation following Nicolai Josuttis, "The
 // Standard C++ Library".
 // ============================================================================
 
 #include "gzstream.h"
 #include <string.h>  // for memcpy
 
-#ifdef GZSTREAM_NAMESPACE
-namespace GZSTREAM_NAMESPACE {
-#endif
+namespace zsdatab_3rdparty {
 
 // ----------------------------------------------------------------------------
 // Internal classes to implement gzstream. See header file for user classes.
@@ -88,9 +86,10 @@ int gzstreambuf::underflow() { // used for input buffer only
     return EOF;
 
   // reset buffer pointers
-  setg(buffer + (4 - n_putback),   // beginning of putback area
-      buffer + 4,                   // read position
-      buffer + 4 + num);            // end of buffer
+  const auto bpmid = buffer + 4;
+  setg(bpmid - n_putback, // beginning of putback area
+       bpmid,             // read position
+       bpmid + num);      // end of buffer
 
   // return next character
   return * reinterpret_cast<unsigned char *>(gptr());
@@ -151,6 +150,4 @@ void gzstreambase::close() {
   if(buf.is_open() && !buf.close()) seterr();
 }
 
-#ifdef GZSTREAM_NAMESPACE
-} // namespace GZSTREAM_NAMESPACE
-#endif
+} // namespace zsdatab_3rdparty

@@ -28,7 +28,7 @@ endfunction()
 
 # WARNING: you must re-run cmake every time a file under lib/ is added
 #          because we use file globbing
-file(GLOB_RECURSE LibSources lib/*.cxx lib/*.cpp lib/*.C)
+file(GLOB_RECURSE LibSources lib/*.cxx)
 add_library(zsdatable SHARED zsdatable.hpp ${LibSources})
 set_target_properties(zsdatable PROPERTIES VERSION "12.0.0" SOVERSION 12)
 # use ${ZLIB_LIBRARIES} instead of ZLIB::ZLIB to make EXPORT happy (shouldn't depend on find_package(ZLIB))

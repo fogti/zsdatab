@@ -45,7 +45,7 @@ namespace zsdatab {
     return make_packed_table_common<ifstream, ofstream>(_path);
   }
 
-  using namespace GZSTREAM_NAMESPACE;
+  using namespace zsdatab_3rdparty;
 
   bool create_gzipped_table(const string &_path, const metadata &_meta) {
     return create_packed_table_common<ogzstream>(_path, _meta);

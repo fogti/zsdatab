@@ -26,18 +26,14 @@
 // Standard C++ Library".
 // ============================================================================
 
-#ifndef GZSTREAM_H
-#define GZSTREAM_H 1
+#pragma once
 
 // standard C++ with new header file names and std:: namespace
 #include <iostream>
 #include <fstream>
 #include <zlib.h>
 
-#define GZSTREAM_NAMESPACE zsdatab_3rdparty
-#ifdef GZSTREAM_NAMESPACE
-namespace GZSTREAM_NAMESPACE {
-#endif
+namespace zsdatab_3rdparty {
 
 // ----------------------------------------------------------------------------
 // Internal classes to implement gzstream. See below for user classes.
@@ -113,8 +109,4 @@ struct ogzstream : public gzstreambase, public std::ostream {
   }
 };
 
-#ifdef GZSTREAM_NAMESPACE
-} // namespace GZSTREAM_NAMESPACE
-#endif
-
-#endif // GZSTREAM_H
+} // namespace zsdatab_3rdparty
