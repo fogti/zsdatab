@@ -36,6 +36,7 @@ using namespace std;
 namespace zsdatab {
   namespace intern {
     namespace ta {
+      namespace {
       enum action_name {
         NONE,        APPEND,
         CLEAR, SORT, UNIQ, NEGATE,
@@ -43,12 +44,15 @@ namespace zsdatab {
         APPEND_PART, REMOVE_PART,
         REPLACE_PART
       };
+      }
 
       struct action {
         virtual ~action() = default;
         virtual void apply(context_common &ctx) const = 0;
         virtual action_name get_name() const noexcept = 0;
       };
+
+      namespace {
 
       struct akv : action {
         string value;
@@ -111,6 +115,8 @@ namespace zsdatab {
       };
 
       typedef vector<shared_ptr<action>> actions_t;
+
+      }
     }
   }
 

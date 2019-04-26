@@ -45,7 +45,7 @@ namespace zsdatab {
     while(getline(ss, col, my_sep)) {
       bool escape = false;
       string col2;
-      for(auto &&c : col) {
+      for(auto c : col) {
         if(escape) {
           escape = false;
           switch(c) {
@@ -69,7 +69,7 @@ namespace zsdatab {
     string ret;
     bool fi = true;
 
-    for(auto &&i : cols) {
+    for(const auto &i : cols) {
       if(!fi) ret += my_sep;
       fi = false;
 
@@ -78,7 +78,7 @@ namespace zsdatab {
         continue;
       }
 
-      for(auto &&c : i)
+      for(auto c : i)
         switch(c) {
           case '\\': ret += "\\\\"; break;
           case '\n': ret += "\\n"; break;
