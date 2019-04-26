@@ -29,12 +29,12 @@
  *
  *************************************************/
 
+#include "zsdatable.hpp"
+#define ZSDA_PAR
+#include <config.h>
+
 #include <algorithm>
 #include <stdexcept>
-#include "zsdatable.hpp"
-
-#define ZSDA_PAR
-#include "config.h"
 
 using namespace std;
 

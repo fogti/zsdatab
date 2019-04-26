@@ -29,13 +29,14 @@
  *
  *************************************************/
 
+#include "table/common.hpp"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sched.h>
 #include <unistd.h>
 
 #include <iostream>
-#include "table/common.hpp"
 
 using namespace std;
 

@@ -29,11 +29,9 @@
  *
  *************************************************/
 
-#include <config.h>
+#include "pool.hpp"
 
 #ifndef HAVE_CXXH_EXECUTION
-#include "3rdparty/ThreadPool/ThreadPool.hpp"
-
 namespace zsdatab {
   namespace intern {
     ThreadPool threadpool(std::thread::hardware_concurrency());

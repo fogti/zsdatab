@@ -301,10 +301,12 @@ namespace zsdatab {
       auto get_column_data(const size_t colnr, const bool _uniq = false) const -> std::vector<std::string>;
       auto get_column_data(const std::string &colname, const bool _uniq = false) const -> std::vector<std::string>;
 
-      auto get_metadata() const noexcept -> const metadata&;
-      auto get_field_nr(const std::string &colname) const -> size_t;
+      auto get_metadata() const noexcept -> const metadata&
+        { return get_const_table().get_metadata(); }
+      auto data() const noexcept -> const buffer_t&
+        { return _buffer; }
 
-      auto data() const noexcept -> const buffer_t&;
+      auto get_field_nr(const std::string &colname) const -> size_t;
 
       // main delegation and abstraction
       virtual auto get_const_table() const noexcept -> const table& = 0;
