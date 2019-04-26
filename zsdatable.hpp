@@ -49,11 +49,6 @@ namespace zsdatab {
     template<class T>
     using pimpl = std::experimental::propagate_const<std::unique_ptr<T>>;
 
-    template<class T>
-    struct swapable {
-      virtual void swap(T &o) noexcept = 0;
-    };
-
     namespace ta {
       // base class for transaction parts
       struct action;
@@ -61,7 +56,7 @@ namespace zsdatab {
   }
 
   // metadata class
-  class metadata final : public intern::swapable<metadata> {
+  class metadata final {
     struct impl;
     intern::pimpl<impl> _d;
 
@@ -149,7 +144,7 @@ namespace zsdatab {
   class context;
 
   // table (delegating) class
-  class table final : public buffer_interface, public table_interface, public intern::swapable<table> {
+  class table final : public buffer_interface, public table_interface {
     std::shared_ptr<table_interface> _t;
 
    public:
@@ -433,7 +428,4 @@ namespace zsdatab {
 
   // table_map_fields - map field names (mappings: {from, to}) (e.g. for an following join)
   table table_map_fields(const buffer_interface &in, std::unordered_map<std::string, std::string> mappings);
-
-  template<class T>
-  void swap(intern::swapable<T> &a, intern::swapable<T> &b) { a.swap(b); }
 }
