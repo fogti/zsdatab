@@ -1,7 +1,7 @@
 /*************************************************
  *      library: zsdatable
  *      package: zsdatab
- *      version: 0.3.0
+ *      version: 0.3.1
  **************| ********************************
  *       author: Erik Kai Alain Zscheile
  *        email: erik.zscheile.ytrizja@gmail.com
@@ -11,7 +11,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2018 Erik Kai Alain Zscheile
+ * Copyright (c) 2019 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -29,17 +29,16 @@
  *
  *************************************************/
 
-#ifndef ZSDATABLE_HPP
-# define ZSDATABLE_HPP 1
-# include <istream>
-# include <ostream>
-# include <string>
-# include <memory>
-# include <unordered_map>
-# include <vector>
-# include <utility>
+#pragma once
+#include <istream>
+#include <ostream>
+#include <string>
+#include <memory>
+#include <unordered_map>
+#include <vector>
+#include <utility>
 
-# include <experimental/propagate_const>
+#include <experimental/propagate_const>
 
 namespace zsdatab {
   typedef std::vector<std::string> row_t;
@@ -106,7 +105,8 @@ namespace zsdatab {
   };
 
   bool operator==(const metadata &a, const metadata &b);
-  bool operator!=(const metadata &a, const metadata &b);
+  static inline bool operator!=(const metadata &a, const metadata &b)
+    { return !(a == b); }
 
   std::ostream& operator<<(std::ostream &stream, const metadata &meta);
   std::istream& operator>>(std::istream &stream, metadata &meta);
@@ -123,7 +123,8 @@ namespace zsdatab {
     virtual auto get_const_table() const noexcept -> const table& = 0;
 
     virtual auto data() const noexcept -> const buffer_t& = 0;
-    bool empty() const noexcept;
+    bool empty() const noexcept
+      { return data().empty(); }
   };
 
   struct table_clone_error : public std::runtime_error {
@@ -159,18 +160,28 @@ namespace zsdatab {
     table(const metadata &_meta);
     table(const metadata &_meta, const buffer_t &n);
 
-    table(std::shared_ptr<table_interface> &&o);
+    table(std::shared_ptr<table_interface> &&o)
+      : _t(std::move(o)) { }
+
     table(const table &o) = default;
     table(table &&o) = default;
     virtual ~table() noexcept = default;
 
-    void swap(table &o) noexcept;
+    void swap(table &o) noexcept
+      { std::swap(_t, o._t); }
 
-    bool good() const noexcept;
-    auto get_metadata() const noexcept -> const metadata&;
-    auto get_const_table() const noexcept -> const table&;
+    bool good() const noexcept
+      { return _t->good(); }
 
-    auto data() const noexcept -> const buffer_t&;
+    auto get_metadata() const noexcept -> const metadata&
+      { return _t->get_metadata(); }
+
+    auto get_const_table() const noexcept -> const table&
+      { return *this; }
+
+    auto data() const noexcept -> const buffer_t&
+      { return _t->data(); }
+
     void data(const buffer_t &n);
 
     auto clone() const -> std::shared_ptr<table_interface>;
@@ -249,9 +260,9 @@ namespace zsdatab {
       friend class fixcol_proxy;
 
      public:
-      context_common(const buffer_interface &bif);
-      context_common(const buffer_t &o);
-      context_common(buffer_t &&o);
+      context_common(const buffer_interface &bif) : _buffer(bif.data())   { }
+      context_common(const buffer_t &o)           : _buffer(o)            { }
+      context_common(buffer_t &&o)                : _buffer(std::move(o)) { }
       context_common(const context_common &ctx) = default;
       context_common(context_common &&ctx) noexcept = default;
       virtual ~context_common() noexcept = default;
@@ -305,7 +316,8 @@ namespace zsdatab {
     };
 
     bool operator==(const context_common &a, const context_common &b) noexcept;
-    bool operator!=(const context_common &a, const context_common &b) noexcept;
+    static inline bool operator!=(const context_common &a, const context_common &b) noexcept
+      { return !(a == b); }
     std::ostream& operator<<(std::ostream& stream, const context_common &ctx);
     std::istream& operator>>(std::istream& stream, context_common& ctx);
 
@@ -426,4 +438,3 @@ namespace zsdatab {
   template<class T>
   void swap(intern::swapable<T> &a, intern::swapable<T> &b) { a.swap(b); }
 }
-#endif

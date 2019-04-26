@@ -111,29 +111,6 @@ namespace zsdatab {
   table::table(const metadata &meta, const buffer_t &n)
     : _t(make_shared<intern::in_memory_table>(meta, n)) { }
 
-  table::table(shared_ptr<table_interface> &&o)
-    : _t(std::move(o)) { }
-
-  void table::swap(table &o) noexcept {
-    std::swap(_t, o._t);
-  }
-
-  bool table::good() const noexcept {
-    return _t->good();
-  }
-
-  auto table::get_metadata() const noexcept -> const metadata& {
-    return _t->get_metadata();
-  }
-
-  auto table::get_const_table() const noexcept -> const table& {
-    return *this;
-  }
-
-  auto table::data() const noexcept -> const buffer_t& {
-    return _t->data();
-  }
-
   void table::data(const buffer_t &n) {
     // copy on write
     if(n != _t->data()) {

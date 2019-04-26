@@ -11,7 +11,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2018 Erik Kai Alain Zscheile
+ * Copyright (c) 2019 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -84,10 +84,6 @@ namespace zsdatab {
 
     bool operator==(const context_common &a, const context_common &b) noexcept {
       return (&a.get_metadata() == &b.get_metadata()) && (a.data() == b.data());
-    }
-
-    bool operator!=(const context_common &a, const context_common &b) noexcept {
-      return !(a == b);
     }
 
     ostream& operator<<(ostream& stream, const context_common &ctx) {

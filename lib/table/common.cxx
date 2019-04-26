@@ -11,7 +11,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2018 Erik Kai Alain Zscheile
+ * Copyright (c) 2019 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -102,10 +102,6 @@ namespace zsdatab {
       return make_shared<table_ref>(_meta, _data);
     }
 
-    table make_table_ref(const metadata &m, const buffer_t &n) {
-      return table(make_shared<table_ref>(m, n));
-    }
-
     table_data_ref::table_data_ref(metadata m, const buffer_t &n)
       : _meta(move(m)), _data(n)
     {
@@ -120,10 +116,6 @@ namespace zsdatab {
 
     auto table_data_ref::clone() const -> std::shared_ptr<table_interface> {
       return make_shared<table_data_ref>(_meta, _data);
-    }
-
-    table make_table_data_ref(metadata m, const buffer_t &n) {
-      return table(make_shared<table_data_ref>(move(m), n));
     }
   }
 }

@@ -11,7 +11,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2018 Erik Kai Alain Zscheile
+ * Copyright (c) 2019 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -29,11 +29,11 @@
  *
  *************************************************/
 
+#include "zsdatable.hpp"
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
 #include <sstream>
-#include "zsdatable.hpp"
 
 using namespace std;
 
@@ -225,5 +225,9 @@ namespace zsdatab {
 
   auto operator>>(istream &stream, metadata &meta) -> istream& {
     return (stream >> *meta._d);
+  }
+
+  bool operator==(const metadata &a, const metadata &b) {
+    return a.get_cols().size() == b.get_cols().size();
   }
 }

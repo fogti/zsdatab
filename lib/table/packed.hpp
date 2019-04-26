@@ -28,10 +28,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  *************************************************/
-#ifndef ZSDATAB_TABLE_PACKED_HPP
-# define ZSDATAB_TABLE_PACKED_HPP 1
-# include <iostream>
-# include "table/common.hpp"
+#pragma once
+#include <iostream>
+#include "table/common.hpp"
 namespace zsdatab {
   namespace intern {
     template<class Tistream, class Tostream>
@@ -89,4 +88,3 @@ namespace zsdatab {
     }
   }
 }
-#endif /* ZSDATAB_TABLE_PACKED_HPP */

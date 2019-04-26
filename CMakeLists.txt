@@ -32,7 +32,7 @@ endfunction()
 #          because we use file globbing
 file(GLOB_RECURSE LibSources lib/*.cxx lib/*.cpp lib/*.C)
 add_library(zsdatable SHARED zsdatable.hpp ${LibSources})
-set_target_properties(zsdatable PROPERTIES VERSION "11.0.0" SOVERSION 11)
+set_target_properties(zsdatable PROPERTIES VERSION "12.0.0" SOVERSION 12)
 # use ${ZLIB_LIBRARIES} instead of ZLIB::ZLIB to make EXPORT happy (shouldn't depend on find_package(ZLIB))
 target_link_libraries(zsdatable ${ZLIB_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 

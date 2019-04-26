@@ -11,7 +11,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2018 Erik Kai Alain Zscheile
+ * Copyright (c) 2019 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -28,9 +28,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  *************************************************/
-#ifndef ZSDATAB_TABLE_COMMON_HPP
-# define ZSDATAB_TABLE_COMMON_HPP 1
-# include "zsdatable.hpp"
+#pragma once
+#include "zsdatable.hpp"
 namespace zsdatab {
   namespace intern {
     class table_impl_common : public table_interface {
@@ -93,7 +92,9 @@ namespace zsdatab {
       auto clone() const -> std::shared_ptr<table_interface>;
     };
 
-    table make_table_ref(const metadata &m, const buffer_t &n);
+    static inline table make_table_ref(const metadata &m, const buffer_t &n) {
+      return table(std::make_shared<table_ref>(m, n));
+    }
 
     class table_data_ref final : public table_interface {
       metadata _meta;
@@ -116,7 +117,8 @@ namespace zsdatab {
       auto clone() const -> std::shared_ptr<table_interface>;
     };
 
-    table make_table_data_ref(metadata m, const buffer_t &n);
+    static inline table make_table_data_ref(metadata m, const buffer_t &n) {
+      return table(std::make_shared<table_data_ref>(std::move(m), n));
+    }
   }
 }
-#endif /* ZSDATAB_TABLE_COMMON_HPP */

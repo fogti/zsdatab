@@ -1,5 +1,5 @@
 /*************************************************
- *        class: zsdatab::buffer_interface
+ *         part: table operators
  *      library: zsdatable
  *      package: zsdatab
  **************| *********************************
@@ -11,7 +11,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2017 Erik Kai Alain Zscheile
+ * Copyright (c) 2019 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -30,9 +30,19 @@
  *************************************************/
 
 #include "zsdatable.hpp"
+#include <sstream>
+
+using namespace std;
 
 namespace zsdatab {
-  bool buffer_interface::empty() const noexcept {
-    return data().empty();
+  ostream& operator<<(ostream &stream, const table &tab) {
+    return (stream << const_context(tab));
+  }
+
+  istream& operator>>(istream &stream, table &tab) {
+    context ctx(tab, {});
+    stream >> ctx;
+    ctx.push();
+    return stream;
   }
 }

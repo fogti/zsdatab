@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
             "  push                                update table file\n"
             "\n"
             "Commands can be joined\n\n"
-            "zsdatab v0.3.0 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>\n"
+            "zsdatab v0.3.1 by Erik Zscheile <erik.zscheile.ytrizja@gmail.com>\n"
             "released under X11-License\n";
     return 1;
   } else if(argc == 2 && string(argv[1]) != "-z") {

@@ -11,7 +11,7 @@
  *     location: Chemnitz, Saxony
  *************************************************
  *
- * Copyright (c) 2018 Erik Kai Alain Zscheile
+ * Copyright (c) 2019 Erik Kai Alain Zscheile
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software
  * and associated documentation files (the "Software"),
@@ -44,15 +44,6 @@ namespace zsdatab {
       if(a.get_metadata() != b.get_metadata())
         throw invalid_argument(__PRETTY_FUNCTION__);
     }
-
-    context_common::context_common(const buffer_interface &bif)
-      : _buffer(bif.data()) { }
-
-    context_common::context_common(const buffer_t &o)
-      : _buffer(o) { }
-
-    context_common::context_common(buffer_t &&o)
-      : _buffer(std::move(o)) { }
 
     context_common& context_common::pull() {
       _buffer = get_const_table().data();
