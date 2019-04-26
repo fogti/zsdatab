@@ -105,11 +105,11 @@ namespace zsdatab {
     : _t(make_shared<intern::permanent_table>(name)) { }
 
   // for in-memory tables
-  table::table(const metadata &meta)
-    : _t(make_shared<intern::in_memory_table>(meta)) { }
+  table::table(metadata meta)
+    : _t(make_shared<intern::in_memory_table>(move(meta))) { }
 
-  table::table(const metadata &meta, const buffer_t &n)
-    : _t(make_shared<intern::in_memory_table>(meta, n)) { }
+  table::table(metadata meta, buffer_t n)
+    : _t(make_shared<intern::in_memory_table>(move(meta), move(n))) { }
 
   void table::data(const buffer_t &n) {
     // copy on write

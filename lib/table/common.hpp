@@ -32,13 +32,13 @@
 #include "zsdatable.hpp"
 namespace zsdatab {
   namespace intern {
-    class table_impl_common : public table_interface {
+    class table_impl_common : public table_interface, public std::enable_shared_from_this<table_impl_common> {
      public:
       table_impl_common() = default;
-      explicit table_impl_common(const metadata &o)
-        : _meta(o) { }
-      table_impl_common(const metadata &m, const buffer_t &n)
-        : _meta(m), _data(n) { }
+      explicit table_impl_common(metadata o)
+        : _meta(std::move(o)) { }
+      table_impl_common(metadata m, buffer_t n)
+        : _meta(std::move(m)), _data(std::move(n)) { }
       virtual ~table_impl_common() noexcept = default;
 
       auto get_metadata() const noexcept -> const metadata&

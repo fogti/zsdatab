@@ -44,21 +44,10 @@ namespace zsdatab {
   typedef std::vector<std::string> row_t;
   typedef std::vector<row_t> buffer_t;
 
-  namespace intern {
-    // type for "pointers to implementation"
-    template<class T>
-    using pimpl = std::experimental::propagate_const<std::unique_ptr<T>>;
-
-    namespace ta {
-      // base class for transaction parts
-      struct action;
-    }
-  }
-
   // metadata class
   class metadata final {
     struct impl;
-    intern::pimpl<impl> _d;
+    std::experimental::propagate_const<std::unique_ptr<impl>> _d;
 
     friend auto operator<<(std::ostream &stream, const metadata::impl &meta) -> std::ostream&;
     friend auto operator>>(std::istream &stream, metadata::impl &meta) -> std::istream&;
@@ -156,8 +145,8 @@ namespace zsdatab {
     table(const std::string &_path);
 
     // for in-memory tables
-    table(const metadata &_meta);
-    table(const metadata &_meta, const buffer_t &n);
+    table(metadata m);
+    table(metadata m, buffer_t n);
 
     table(std::shared_ptr<table_interface> &&o)
       : _t(std::move(o)) { }
@@ -362,6 +351,11 @@ namespace zsdatab {
     template<class T>
     context_base<T> operator+(const context_base<const T> &a, const context_base<T> &b) {
       return (context_base<T>(b) = a) += b;
+    }
+
+    namespace ta {
+      // base class for transaction parts
+      struct action;
     }
   }
 

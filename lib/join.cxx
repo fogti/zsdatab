@@ -94,9 +94,12 @@ zsdatab::table zsdatab::inner_join(const char sep, const buffer_interface &a, co
             l = x[se.a]; break;
 
           case column_join_from_where::FROM_B:
-            l = y[se.b];
+            l = y[se.b]; break;
 
-          default: match = (l == y[se.a]);
+          default:
+            l = x[se.a];
+            match = (l == y[se.b]);
+            break;
         }
 
         if(!match) break;
@@ -104,5 +107,5 @@ zsdatab::table zsdatab::inner_join(const char sep, const buffer_interface &a, co
       if(match) table_data.emplace_back(move(line));
     }
 
-  return table(mt, table_data);
+  return table(move(mt), move(table_data));
 }
