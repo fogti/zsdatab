@@ -97,6 +97,10 @@ namespace zsdatab {
       return (_data.empty() || get_metadata().get_field_count() == _data.front().size());
     }
 
+    auto table_ref_common::data_move_out() && -> buffer_t&& {
+      throw logic_error(__PRETTY_FUNCTION__);
+    }
+
     void table_ref_common::data(const buffer_t &n) {
       throw logic_error(__PRETTY_FUNCTION__);
     }

@@ -59,7 +59,7 @@ namespace zsdatab {
             // use an in-memory table to get input, copy to _data
             table tmpt(_meta);
             in >> tmpt;
-            _data = tmpt.data();
+            _data = move(tmpt).data_move_out();
           }
         }
       }

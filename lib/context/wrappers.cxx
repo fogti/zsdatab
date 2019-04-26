@@ -105,7 +105,7 @@ namespace zsdatab {
     }
 
     // operators
-    static void op_table_compat_chk(const table& a, const table& b) {
+    static void op_table_compat_chk(const buffer_interface& a, const buffer_interface& b) {
       if(a.get_metadata() != b.get_metadata())
         throw invalid_argument(__PRETTY_FUNCTION__);
     }
@@ -116,21 +116,21 @@ namespace zsdatab {
 
     context_common& context_common::operator=(const buffer_interface &o) {
       if(this != &o) {
-        op_table_compat_chk(get_const_table(), o.get_const_table());
+        op_table_compat_chk(*this, o);
         _buffer = o.data();
       }
       return *this;
     }
 
     context_common& context_common::operator=(context_common &&o) {
-      op_table_compat_chk(get_const_table(), o.get_const_table());
+      op_table_compat_chk(*this, o);
       swap(_buffer, o._buffer);
       return *this;
     }
 
     context_common& context_common::operator+=(const buffer_interface &o) {
       if(this != &o) {
-        op_table_compat_chk(get_const_table(), o.get_const_table());
+        op_table_compat_chk(*this, o);
         _buffer.reserve(_buffer.size() + o.data().size());
         _buffer.insert(_buffer.end(), o.data().begin(), o.data().end());
       } else {

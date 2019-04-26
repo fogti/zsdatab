@@ -42,9 +42,11 @@ namespace zsdatab {
           in >> _meta;
           _valid = !_meta.empty();
 
+        }
+        if(_valid) {
           table tmpt(_meta);
           in >> tmpt;
-          _data = tmpt.data();
+          _data = std::move(tmpt).data_move_out();
         }
       }
 

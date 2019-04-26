@@ -100,6 +100,7 @@ namespace zsdatab {
   std::istream& operator>>(std::istream &stream, metadata &meta);
 
   class table;
+  struct table_interface;
 
   // buffer_interface class:
   //  common interface for table, context and const_context
@@ -108,9 +109,11 @@ namespace zsdatab {
     virtual ~buffer_interface() noexcept = default;
 
     virtual auto get_metadata() const noexcept -> const metadata& = 0;
-    virtual auto get_const_table() const noexcept -> const table& = 0;
+    virtual auto get_const_table() const noexcept -> const table_interface& = 0;
 
     virtual auto data() const noexcept -> const buffer_t& = 0;
+    virtual auto data_move_out() && -> buffer_t&& = 0;
+
     bool empty() const noexcept
       { return data().empty(); }
   };
@@ -121,15 +124,10 @@ namespace zsdatab {
 
   // table_interface class:
   //  common interface for tables
-  struct table_interface {
-    virtual ~table_interface() noexcept = default;
-
+  struct table_interface : public buffer_interface {
     virtual bool good() const noexcept = 0;
-
-    virtual auto get_metadata() const noexcept -> const metadata& = 0;
     virtual auto data() const noexcept -> const buffer_t& = 0;
     virtual void data(const buffer_t &n) = 0;
-
     virtual auto clone() const -> std::shared_ptr<table_interface> = 0;
   };
 
@@ -137,7 +135,7 @@ namespace zsdatab {
   class context;
 
   // table (delegating) class
-  class table final : public buffer_interface, public table_interface {
+  class table final : public table_interface {
     std::shared_ptr<table_interface> _t;
 
    public:
@@ -169,6 +167,9 @@ namespace zsdatab {
 
     auto data() const noexcept -> const buffer_t&
       { return _t->data(); }
+
+    auto data_move_out() && -> buffer_t&&
+      { return std::move(*_t).data_move_out(); }
 
     void data(const buffer_t &n);
 
@@ -290,11 +291,13 @@ namespace zsdatab {
         { return get_const_table().get_metadata(); }
       auto data() const noexcept -> const buffer_t&
         { return _buffer; }
+      auto data_move_out() && -> buffer_t&&
+        { return std::move(_buffer); }
 
       auto get_field_nr(const std::string &colname) const -> size_t;
 
       // main delegation and abstraction
-      virtual auto get_const_table() const noexcept -> const table& = 0;
+      virtual auto get_const_table() const noexcept -> const table_interface& = 0;
 
      protected:
       buffer_t _buffer;
@@ -323,7 +326,7 @@ namespace zsdatab {
       context_base(const T &&tab) = delete;
       context_base(const T &&tab, const buffer_t &&o) = delete;
 
-      auto get_const_table() const noexcept -> const table& final
+      auto get_const_table() const noexcept -> const table_interface& final
         { return _table; }
 
       // delegators
