@@ -33,10 +33,10 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sched.h>
 #include <unistd.h>
 
 #include <iostream>
+#include <thread>
 
 using namespace std;
 
@@ -73,7 +73,7 @@ namespace zsdatab {
           cerr << "libzsdatable.so: WARNING: waiting for table lock on '" << name << "' ";
         fi = false;
         cerr << '.';
-        sched_yield();
+        this_thread::yield();
       }
       if(!fi) cerr << '\n';
     }
