@@ -114,7 +114,8 @@ namespace zsdatab {
   void table::data(const buffer_t &n) {
     // copy on write
     if(n != _t->data()) {
-      if(!_t.unique()) _t = _t->clone();
+      if(!experimental::get_underlying(_t).unique())
+        _t = _t->clone();
       _t->data(n);
     }
   }

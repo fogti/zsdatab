@@ -136,7 +136,7 @@ namespace zsdatab {
 
   // table (delegating) class
   class table final : public table_interface {
-    std::shared_ptr<table_interface> _t;
+    std::experimental::propagate_const<std::shared_ptr<table_interface>> _t;
 
    public:
     // for permanent tables
