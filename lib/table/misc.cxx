@@ -1,16 +1,31 @@
-/********************************************************
+/**********************************************
+ *    part: table operators
  *    part: extra table implementations (packed tables)
  * library: zsdatable
  * package: zsdatab
  * SPDX-License-Identifier: LGPL-2.1-or-later
- ********************************************************/
+ **********************************************/
 
+#include "zsdatable.hpp"
 #include "packed.hpp"
 #include <3rdparty/gzstream/gzstream.h>
 #include <fstream>
+#include <sstream>
+
+using namespace std;
 
 namespace zsdatab {
-  using namespace std;
+  ostream& operator<<(ostream &stream, const table &tab) {
+    return (stream << const_context(tab));
+  }
+
+  istream& operator>>(istream &stream, table &tab) {
+    context ctx(tab, {});
+    stream >> ctx;
+    ctx.push();
+    return stream;
+  }
+
   using namespace intern;
 
   bool create_packed_table(const std::string &_path, const metadata &_meta) {
