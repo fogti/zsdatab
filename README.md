@@ -1,5 +1,9 @@
 # zsdatab
 
+## License
+
+This library is licensed under `LGPL-2.1-or-later` (SPDX identifier).
+
 ## USAGE zsdatable
 
 ```
