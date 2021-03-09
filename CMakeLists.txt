@@ -34,7 +34,12 @@ set_target_properties(zsdatable PROPERTIES VERSION "12.0.0" SOVERSION 12)
 # use ${ZLIB_LIBRARIES} instead of ZLIB::ZLIB to make EXPORT happy (shouldn't depend on find_package(ZLIB))
 target_link_libraries(zsdatable ${ZLIB_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
-src_compile_flags("-frtti" lib/transaction.cxx)
+src_compile_flags("-frtti"
+  lib/context/common.cxx
+  lib/fixcol_proxy.cxx
+  lib/table/filter.cxx
+  lib/transaction.cxx
+)
 
 add_executable(zsdatab-entry entry.cxx)
 target_link_libraries(zsdatab-entry zsdatable)
